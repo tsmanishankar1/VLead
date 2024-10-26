@@ -173,6 +173,8 @@ public partial class JobOrder2
     public virtual Department? Department { get; set; }
     [ForeignKey("EmployeeId")]
     public virtual Employee? Employee { get; set; }
+
+    public virtual ICollection<ClientCommunicationTran> ClientCommunicationTrans { get; set; } = new List<ClientCommunicationTran>();
     public virtual ICollection<EmployeeAssign>? EmployeeAssigns { get; } = new List<EmployeeAssign>();
 
     public virtual ICollection<JobOrderExtension>? JobOrderExtensions { get; } = new List<JobOrderExtension>();

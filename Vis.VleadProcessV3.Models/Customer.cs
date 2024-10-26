@@ -122,6 +122,8 @@ public partial class Customer
     public virtual Company Company { get; set; } = null!;
     public virtual CustomerClassification CustomerClassification { get; set; } = null!;
 
+    public virtual ICollection<ClientCommunicationTran> ClientCommunicationTrans { get; set; } = new List<ClientCommunicationTran>();
+
     public virtual ICollection<CustomerCommunication> CustomerCommunications { get; } = new List<CustomerCommunication>();
 
     public virtual ICollection<CustomerContact> CustomerContacts { get; } = new List<CustomerContact>();

@@ -61,6 +61,8 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<ClientCommunication> ClientCommunications { get; set; }
 
+    public virtual DbSet<ClientCommunicationTran> ClientCommunicationTrans { get; set; }
+
     public virtual DbSet<ClientOrder> ClientOrders { get; set; }
 
     public virtual DbSet<ClientOrderExt> ClientOrderExts { get; set; }
@@ -1019,6 +1021,50 @@ public partial class ApplicationDbContext : DbContext
             entity.HasOne(d => d.Manager).WithMany(p => p.CustomerVsManagers)
                 .HasForeignKey(d => d.ManagerId)
                 .HasConstraintName("FK_CustomerVsManager_Employee");
+        });
+
+        modelBuilder.Entity<ClientCommunication>(entity =>
+        {
+            entity.ToTable("ClientCommunication");
+
+            entity.Property(e => e.Agmapproved)
+                .HasDefaultValueSql("((0))")
+                .HasColumnName("AGMApproved");
+            entity.Property(e => e.Agmrejected).HasColumnName("AGMRejected");
+            entity.Property(e => e.ApprovedUtc)
+                .HasColumnType("datetime")
+                .HasColumnName("ApprovedUTC");
+            entity.Property(e => e.CreatedUtc).HasColumnType("datetime");
+            entity.Property(e => e.DelayType)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.RejectedUpdatedUtc).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<ClientCommunicationTran>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__ClientCo__3214EC0767FEE283");
+
+            entity.ToTable("ClientCommunicationTran");
+
+            entity.Property(e => e.Ccid).HasColumnName("CCId");
+            entity.Property(e => e.Email)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.ClientCommunication).WithMany(p => p.ClientCommunicationTrans)
+                .HasForeignKey(d => d.Ccid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ClientCommunicationTran_CCId");
+            entity.Property(e => e.CreatedUtc).HasColumnType("datetime");
+            entity.HasOne(d => d.Customer).WithMany(p => p.ClientCommunicationTrans)
+                .HasForeignKey(d => d.CustomerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ClientCommunicationTran_CustomerId");
+
+            entity.HasOne(d => d.Job).WithMany(p => p.ClientCommunicationTrans)
+                .HasForeignKey(d => d.JobId)
+                .HasConstraintName("FK_ClientCommunicationTran_JobId");
         });
 
         modelBuilder.Entity<ClientOrder>(entity =>
