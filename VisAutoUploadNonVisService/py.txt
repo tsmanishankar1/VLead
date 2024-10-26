@@ -1,0 +1,16 @@
+import os
+import openai
+openai.api_type = "azure"
+openai.api_base = "https://kryptosopenai.openai.azure.com/"
+openai.api_version = "2022-12-01"
+openai.api_key = os.getenv("4b59324d09164fd0a1fbb9425b607e48")
+
+response = openai.Completion.create(
+  engine="gptmodel",
+  prompt="",
+  temperature=1,
+  max_tokens=100,
+  top_p=0.5,
+  frequency_penalty=0,
+  presence_penalty=0,
+  stop=None)

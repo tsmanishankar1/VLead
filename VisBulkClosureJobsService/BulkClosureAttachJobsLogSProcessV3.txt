@@ -1,0 +1,82 @@
+﻿2023-07-21 10:18:58.839 +05:30 [INF] Default Quartz.NET properties loaded from embedded resource file
+2023-07-21 10:18:59.138 +05:30 [INF] Initialized Scheduler Signaller of type: Quartz.Core.SchedulerSignalerImpl
+2023-07-21 10:18:59.157 +05:30 [INF] Quartz Scheduler created
+2023-07-21 10:18:59.177 +05:30 [INF] RAMJobStore initialized.
+2023-07-21 10:18:59.180 +05:30 [INF] Quartz Scheduler 3.6.3.0 - 'DefaultQuartzScheduler' with instanceId 'NON_CLUSTERED' initialized
+2023-07-21 10:18:59.182 +05:30 [INF] Using thread pool 'Quartz.Simpl.DefaultThreadPool', size: 10
+2023-07-21 10:18:59.184 +05:30 [INF] Using job store 'Quartz.Simpl.RAMJobStore', supports persistence: False, clustered: False
+2023-07-21 10:18:59.251 +05:30 [INF] Scheduler DefaultQuartzScheduler_$_NON_CLUSTERED started.
+2023-07-21 10:19:24.285 +05:30 [INF] Date :21-07-2023 04:49:24
+2023-07-21 10:19:24.675 +05:30 [INF] System.InvalidOperationException: The ConnectionString property has not been initialized.
+   at Microsoft.Data.SqlClient.SqlConnection.PermissionDemand()
+   at Microsoft.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at Microsoft.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry, SqlConnectionOverrides overrides)
+   at Microsoft.Data.SqlClient.SqlConnection.Open(SqlConnectionOverrides overrides)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternal(Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.Open(Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReader(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.InitializeReader(Enumerator enumerator)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.MoveNext()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at Vis.VleadProcessV3.Services.WorkflowService.BulkClosureNextTraymovement() in C:\Users\balaji.g\source\repos\VIS_Internal_API\Vis.VleadProcessV3.Services\WorkflowService.cs:line 44
+   at VisBulkClosureJobsService.BulkClosureJobs.ExportExcel() in C:\Users\balaji.g\source\repos\VIS_Internal_API\VisBulkClosureJobsService\BulkClosureJobs.cs:line 33
+2023-07-21 10:21:31.992 +05:30 [INF] Default Quartz.NET properties loaded from embedded resource file
+2023-07-21 10:21:32.314 +05:30 [INF] Initialized Scheduler Signaller of type: Quartz.Core.SchedulerSignalerImpl
+2023-07-21 10:21:32.382 +05:30 [INF] Quartz Scheduler created
+2023-07-21 10:21:32.395 +05:30 [INF] RAMJobStore initialized.
+2023-07-21 10:21:32.397 +05:30 [INF] Quartz Scheduler 3.6.3.0 - 'DefaultQuartzScheduler' with instanceId 'NON_CLUSTERED' initialized
+2023-07-21 10:21:32.400 +05:30 [INF] Using thread pool 'Quartz.Simpl.DefaultThreadPool', size: 10
+2023-07-21 10:21:32.402 +05:30 [INF] Using job store 'Quartz.Simpl.RAMJobStore', supports persistence: False, clustered: False
+2023-07-21 10:21:32.466 +05:30 [INF] Scheduler DefaultQuartzScheduler_$_NON_CLUSTERED started.
+2023-07-21 10:21:55.613 +05:30 [INF] Date :21-07-2023 04:51:55
+2023-07-21 10:21:55.716 +05:30 [INF] System.InvalidOperationException: The ConnectionString property has not been initialized.
+   at Microsoft.Data.SqlClient.SqlConnection.PermissionDemand()
+   at Microsoft.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at Microsoft.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry, SqlConnectionOverrides overrides)
+   at Microsoft.Data.SqlClient.SqlConnection.Open(SqlConnectionOverrides overrides)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternal(Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.Open(Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReader(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.InitializeReader(Enumerator enumerator)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.MoveNext()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at Vis.VleadProcessV3.Services.WorkflowService.BulkClosureNextTraymovement() in C:\Users\balaji.g\source\repos\VIS_Internal_API\Vis.VleadProcessV3.Services\WorkflowService.cs:line 44
+   at VisBulkClosureJobsService.BulkClosureJobs.ExportExcel() in C:\Users\balaji.g\source\repos\VIS_Internal_API\VisBulkClosureJobsService\BulkClosureJobs.cs:line 33
+2023-07-21 10:26:32.549 +05:30 [INF] Date :21-07-2023 04:56:32
+2023-07-21 10:26:32.553 +05:30 [INF] System.InvalidOperationException: The ConnectionString property has not been initialized.
+   at Microsoft.Data.SqlClient.SqlConnection.PermissionDemand()
+   at Microsoft.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at Microsoft.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry, SqlConnectionOverrides overrides)
+   at Microsoft.Data.SqlClient.SqlConnection.Open(SqlConnectionOverrides overrides)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternal(Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.Open(Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReader(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.InitializeReader(Enumerator enumerator)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.MoveNext()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at Vis.VleadProcessV3.Services.WorkflowService.BulkClosureNextTraymovement() in C:\Users\balaji.g\source\repos\VIS_Internal_API\Vis.VleadProcessV3.Services\WorkflowService.cs:line 44
+   at VisBulkClosureJobsService.BulkClosureJobs.ExportExcel() in C:\Users\balaji.g\source\repos\VIS_Internal_API\VisBulkClosureJobsService\BulkClosureJobs.cs:line 33
+2023-07-21 10:30:43.416 +05:30 [INF] Default Quartz.NET properties loaded from embedded resource file
+2023-07-21 10:30:43.643 +05:30 [INF] Initialized Scheduler Signaller of type: Quartz.Core.SchedulerSignalerImpl
+2023-07-21 10:30:43.654 +05:30 [INF] Quartz Scheduler created
+2023-07-21 10:30:43.667 +05:30 [INF] RAMJobStore initialized.
+2023-07-21 10:30:43.669 +05:30 [INF] Quartz Scheduler 3.6.3.0 - 'DefaultQuartzScheduler' with instanceId 'NON_CLUSTERED' initialized
+2023-07-21 10:30:43.671 +05:30 [INF] Using thread pool 'Quartz.Simpl.DefaultThreadPool', size: 10
+2023-07-21 10:30:43.675 +05:30 [INF] Using job store 'Quartz.Simpl.RAMJobStore', supports persistence: False, clustered: False
+2023-07-21 10:30:43.744 +05:30 [INF] Scheduler DefaultQuartzScheduler_$_NON_CLUSTERED started.
+2023-07-21 10:31:28.066 +05:30 [INF] False :21-07-2023 05:01:28
+2023-07-21 10:36:02.491 +05:30 [INF] Default Quartz.NET properties loaded from embedded resource file
+2023-07-21 10:36:02.720 +05:30 [INF] Initialized Scheduler Signaller of type: Quartz.Core.SchedulerSignalerImpl
+2023-07-21 10:36:02.732 +05:30 [INF] Quartz Scheduler created
+2023-07-21 10:36:02.735 +05:30 [INF] RAMJobStore initialized.
+2023-07-21 10:36:02.740 +05:30 [INF] Quartz Scheduler 3.6.3.0 - 'DefaultQuartzScheduler' with instanceId 'NON_CLUSTERED' initialized
+2023-07-21 10:36:02.756 +05:30 [INF] Using thread pool 'Quartz.Simpl.DefaultThreadPool', size: 10
+2023-07-21 10:36:02.758 +05:30 [INF] Using job store 'Quartz.Simpl.RAMJobStore', supports persistence: False, clustered: False
+2023-07-21 10:36:02.820 +05:30 [INF] Scheduler DefaultQuartzScheduler_$_NON_CLUSTERED started.
+2023-07-21 10:36:44.924 +05:30 [INF] False :21-07-2023 05:06:44

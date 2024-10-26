@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "VisAutoUploadService": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

@@ -1,0 +1,29 @@
+﻿2023-07-24 11:34:37.061 +05:30 [INF] Default Quartz.NET properties loaded from embedded resource file
+2023-07-24 11:34:37.200 +05:30 [INF] Initialized Scheduler Signaller of type: Quartz.Core.SchedulerSignalerImpl
+2023-07-24 11:34:37.201 +05:30 [INF] Quartz Scheduler created
+2023-07-24 11:34:37.212 +05:30 [INF] RAMJobStore initialized.
+2023-07-24 11:34:37.215 +05:30 [INF] Quartz Scheduler 3.6.3.0 - 'DefaultQuartzScheduler' with instanceId 'NON_CLUSTERED' initialized
+2023-07-24 11:34:37.217 +05:30 [INF] Using thread pool 'Quartz.Simpl.DefaultThreadPool', size: 10
+2023-07-24 11:34:37.219 +05:30 [INF] Using job store 'Quartz.Simpl.RAMJobStore', supports persistence: False, clustered: False
+2023-07-24 11:34:37.280 +05:30 [INF] Scheduler DefaultQuartzScheduler_$_NON_CLUSTERED started.
+2023-07-24 11:34:55.425 +05:30 [INF] Number Of Job Orders :0
+2023-07-24 11:50:06.218 +05:30 [INF] Default Quartz.NET properties loaded from embedded resource file
+2023-07-24 11:50:06.460 +05:30 [INF] Initialized Scheduler Signaller of type: Quartz.Core.SchedulerSignalerImpl
+2023-07-24 11:50:06.462 +05:30 [INF] Quartz Scheduler created
+2023-07-24 11:50:06.464 +05:30 [INF] RAMJobStore initialized.
+2023-07-24 11:50:06.466 +05:30 [INF] Quartz Scheduler 3.6.3.0 - 'DefaultQuartzScheduler' with instanceId 'NON_CLUSTERED' initialized
+2023-07-24 11:50:06.468 +05:30 [INF] Using thread pool 'Quartz.Simpl.DefaultThreadPool', size: 10
+2023-07-24 11:50:06.470 +05:30 [INF] Using job store 'Quartz.Simpl.RAMJobStore', supports persistence: False, clustered: False
+2023-07-24 11:50:06.536 +05:30 [INF] Scheduler DefaultQuartzScheduler_$_NON_CLUSTERED started.
+2023-07-24 11:50:21.845 +05:30 [INF] Number Of Job Orders :0
+2023-07-24 16:39:31.705 +05:30 [INF] Default Quartz.NET properties loaded from embedded resource file
+2023-07-24 16:39:31.901 +05:30 [INF] Initialized Scheduler Signaller of type: Quartz.Core.SchedulerSignalerImpl
+2023-07-24 16:39:31.915 +05:30 [INF] Quartz Scheduler created
+2023-07-24 16:39:31.929 +05:30 [INF] RAMJobStore initialized.
+2023-07-24 16:39:31.931 +05:30 [INF] Quartz Scheduler 3.6.3.0 - 'DefaultQuartzScheduler' with instanceId 'NON_CLUSTERED' initialized
+2023-07-24 16:39:31.932 +05:30 [INF] Using thread pool 'Quartz.Simpl.DefaultThreadPool', size: 10
+2023-07-24 16:39:31.934 +05:30 [INF] Using job store 'Quartz.Simpl.RAMJobStore', supports persistence: False, clustered: False
+2023-07-24 16:39:31.987 +05:30 [INF] Scheduler DefaultQuartzScheduler_$_NON_CLUSTERED started.
+2023-07-24 16:39:49.783 +05:30 [INF] Number Of Job Orders :0
+2023-07-24 16:49:33.442 +05:30 [INF] Number Of Job Orders :0
+2023-07-24 16:59:32.005 +05:30 [INF] Number Of Job Orders :0

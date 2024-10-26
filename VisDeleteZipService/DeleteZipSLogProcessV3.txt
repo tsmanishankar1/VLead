@@ -1,0 +1,15 @@
+﻿2023-07-24 12:13:56.882 +05:30 [INF] Default Quartz.NET properties loaded from embedded resource file
+2023-07-24 12:13:57.109 +05:30 [INF] Initialized Scheduler Signaller of type: Quartz.Core.SchedulerSignalerImpl
+2023-07-24 12:13:57.111 +05:30 [INF] Quartz Scheduler created
+2023-07-24 12:13:57.125 +05:30 [INF] RAMJobStore initialized.
+2023-07-24 12:13:57.127 +05:30 [INF] Quartz Scheduler 3.6.3.0 - 'DefaultQuartzScheduler' with instanceId 'NON_CLUSTERED' initialized
+2023-07-24 12:13:57.129 +05:30 [INF] Using thread pool 'Quartz.Simpl.DefaultThreadPool', size: 10
+2023-07-24 12:13:57.130 +05:30 [INF] Using job store 'Quartz.Simpl.RAMJobStore', supports persistence: False, clustered: False
+2023-07-24 12:13:57.191 +05:30 [INF] Scheduler DefaultQuartzScheduler_$_NON_CLUSTERED started.
+2023-07-24 12:13:57.407 +05:30 [INF] DeleteZip Working Fine :24-07-2023 06:43:57
+2023-07-24 12:18:57.154 +05:30 [INF] DeleteZip Working Fine :24-07-2023 06:48:57
+2023-07-24 12:23:57.208 +05:30 [INF] DeleteZip Working Fine :24-07-2023 06:53:57
+2023-07-24 12:28:57.156 +05:30 [INF] DeleteZip Working Fine :24-07-2023 06:58:57
+2023-07-24 12:33:57.178 +05:30 [INF] DeleteZip Working Fine :24-07-2023 07:03:57
+2023-07-24 12:38:57.156 +05:30 [INF] DeleteZip Working Fine :24-07-2023 07:08:57  
+2023-07-24 12:43:57.161 +05:30 [INF] DeleteZip Working Fine :24-07-2023 07:13:57
