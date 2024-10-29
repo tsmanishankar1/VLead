@@ -197,7 +197,7 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<KravsDesignation> KravsDesignations { get; set; }
 
-    public virtual DbSet<LeaveTrack> LeaveTracks { get; set; }
+    public virtual DbSet<LeaveMaster> LeaveMasters { get; set; }
 
     public virtual DbSet<LeaveRequest> LeaveRequests { get; set; }
 
@@ -3122,6 +3122,20 @@ public partial class ApplicationDbContext : DbContext
                 .HasColumnName("UpdatedUTC");
         });
 
+        modelBuilder.Entity<LeaveMaster>(entity =>
+        {
+            entity.ToTable("LeaveMaster");
+
+            entity.Property(e => e.CreatedUtc).HasColumnType("datetime");
+            entity.Property(e => e.Leave)
+                .HasMaxLength(250)
+                .IsUnicode(false);
+            entity.Property(e => e.LeaveType)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.UpdatedUtc).HasColumnType("datetime");
+        });
+
         modelBuilder.Entity<LeaveRequest>(entity =>
         {
             entity.ToTable("LeaveRequest");
@@ -3129,17 +3143,11 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.Comments)
                 .HasMaxLength(250)
                 .IsUnicode(false);
-
-            entity.Property(e => e.EndDate)
-                .HasColumnType("datetime");
-
-            entity.Property(e => e.StartDate)
-                .HasColumnType("datetime");
-
-            entity.Property(e => e.LeaveCategoryName)
+            entity.Property(e => e.EndDate).HasColumnType("datetime");
+            entity.Property(e => e.LeaveCategory)
                 .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("LeaveCategory");
+                .IsUnicode(false);
+            entity.Property(e => e.StartDate).HasColumnType("datetime");
             entity.Property(e => e.UpdatedUtc).HasColumnType("datetime");
         });
 

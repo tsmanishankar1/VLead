@@ -18,6 +18,37 @@ namespace Vis.VleadProcessV3.Services
             _context = context;
         }
 
+        public LeaveMaster AddLeave(LeaveMasterRequest addLeaveRequest)
+        {
+            var addLeave = new LeaveMaster
+            {
+                Leave = addLeaveRequest.Leave,
+                LeaveType = addLeaveRequest.LeaveType,
+                IsActive = true,
+                CreatedBy = addLeaveRequest.CreatedBy,
+                CreatedUtc = DateTime.UtcNow
+            };
+
+            _context.LeaveMasters.Add(addLeave);
+            _context.SaveChanges();
+
+            return addLeave;
+        }
+
+        public List<LeaveMasterResponse> GetAllLeaves()
+        {
+            var leaveRequests = _context.LeaveMasters
+                .Where(l => l.IsActive)
+                .Select(l => new LeaveMasterResponse
+                {
+                    Leave = l.Leave,
+                    LeaveType = l.LeaveType
+                })
+                .ToList();
+
+            return leaveRequests;
+        }
+
         public LeaveRequest LeaveRequest(SubmitLeave submitLeave)
         {
             var leaveRequest = new LeaveRequest
@@ -59,8 +90,8 @@ namespace Vis.VleadProcessV3.Services
         public List<GetLeaveRequests> GetEmployeeLeaves(GetLeave getLeave)
         {
             var department = _context.Employees.FirstOrDefault(d => d.EmployeeId == getLeave.EmployeeId && d.IsDeleted == false);
-            var role = _context.EmployeeVsRoles.FirstOrDefault(r => r.EmployeeId == getLeave.EmployeeId && r.IsDeleted == false);
-            if ((department != null && department.DepartmentId == 7) || (role != null && role.RoleId == 7))
+            //var role = _context.EmployeeVsRoles.FirstOrDefault(r => r.EmployeeId == getLeave.EmployeeId && r.IsDeleted == false);
+            if ((department != null && department.DepartmentId == 7)) //|| (role != null && role.RoleId == 7))
             {
                 var leaveRequests = _context.LeaveRequests
                     .Where(l => l.IsDelete == false)
@@ -72,7 +103,6 @@ namespace Vis.VleadProcessV3.Services
                               Id = leave.Id,
                               EmployeeName = employee.EmployeeName,
                               LeaveCategoryId = leave.LeaveCategory,
-                              LeaveCategory = leave.LeaveCategoryName,
                               StartDate = leave.StartDate,
                               EndDate = leave.EndDate,
                               Comments = leave.Comments
@@ -97,7 +127,6 @@ namespace Vis.VleadProcessV3.Services
                               Id = leave.Id,
                               EmployeeName = employee.EmployeeName,
                               LeaveCategoryId = leave.LeaveCategory,
-                              LeaveCategory = leave.LeaveCategoryName,
                               StartDate = leave.StartDate,
                               EndDate = leave.EndDate,
                               Comments = leave.Comments

@@ -16,7 +16,50 @@ namespace VisProcess.Controllers
             _service = service;
         }
 
-        [HttpPost("LeaveRequest")]
+        [HttpPost("AddLeave")]
+        public IActionResult AddLeave(LeaveMasterRequest addLeave)
+        {
+            try
+            {
+                var leaveRequest = _service.AddLeave(addLeave);
+                var response = new
+                {
+                    Success = true,
+                    Message = "Leave added successfully."
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = new
+                {
+                    Success = false,
+                    Message = "Leave added failed."
+                };
+                return Ok(response);
+            }
+        }
+
+        [HttpGet("GetAllLeaves")]
+        public IActionResult GetAllLeaves()
+        {
+            try
+            {
+                var leaves = _service.GetAllLeaves();
+                return Ok(leaves);
+            }
+            catch (MessageNotFoundException ex)
+            {
+                return Ok(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Ok(ex.Message);
+            }
+        }
+
+
+            [HttpPost("LeaveRequest")]
         public IActionResult LeaveRequest(SubmitLeave submitLeave)
         {
             try

@@ -10,7 +10,7 @@ namespace Vis.VleadProcessV3.Models
     public class UpdateLeave
     {
         public int Id { get; set; }
-        public LeaveCategory LeaveCategory { get; set; }
+        public string LeaveCategory { get; set; }
         public string Comments { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

@@ -14,11 +14,11 @@ namespace VisProcess.Controllers
         }
         [HttpGet]
         [Route("GetPendingPricingForSales")]
-        public IActionResult GetPendingPricingForSales(int empId)
+        public IActionResult GetPendingPricingForSales(int empId, DateTime fromDate, DateTime toDate)
         {
             try
             {
-                var result = _pricingTriggerService.GetPendingPricingForSales(empId);
+                var result = _pricingTriggerService.GetPendingPricingForSales(empId, fromDate, toDate);
                 if (result != null)
                 {
                     return Ok(result);

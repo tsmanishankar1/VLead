@@ -10,7 +10,7 @@ namespace Vis.VleadProcessV3.Models
     {
         public int Id { get; set; }
         public string EmployeeName { get; set; }
-        public LeaveCategory LeaveCategoryId { get; set; }
+        public string LeaveCategoryId { get; set; }
         public string LeaveCategory { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

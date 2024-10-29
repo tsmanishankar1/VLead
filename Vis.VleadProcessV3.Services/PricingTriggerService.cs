@@ -24,13 +24,15 @@ namespace Vis.VleadProcessV3.Services
             this._configuration = configuration;
             this._procedureWork = procedureWork;
         }
-        public List<GetPendingPricingDetailForSales_Result> GetPendingPricingForSales(int empId)
+        public List<GetPendingPricingDetailForSales_Result> GetPendingPricingForSales(int empId, DateTime fromDate, DateTime toDate)
         {
             var sqlPara = new SqlParameter[]
             {
             new SqlParameter("@EmployeeId", empId),
+            new SqlParameter("@FromDate", fromDate),
+            new SqlParameter("@ToDate", toDate)
             };
-            var pendingPriceJobs = _procedureWork.ExecStoredProcedure<GetPendingPricingDetailForSales_Result>("GetPendingPricingDetailForSales @EmployeeId", sqlPara);
+            var pendingPriceJobs = _procedureWork.ExecStoredProcedure<GetPendingPricingDetailForSales_Result>("GetPendingPricingDetailForSales @EmployeeId, @FromDate, @ToDate", sqlPara);
             if (pendingPriceJobs != null)
             {
                 return pendingPriceJobs.ToList();

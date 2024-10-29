@@ -4,6 +4,7 @@ using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using Vis.VleadProcessV3.Models;
 using Vis.VleadProcessV3.Services;
 
@@ -38,7 +39,7 @@ namespace VisProcess.Controllers
 
                 using (var package = new ExcelPackage(file.OpenReadStream()))
                 {
-                    var worksheet = package.Workbook.Worksheets[4];
+                    var worksheet = package.Workbook.Worksheets[0];
 
                     for (int row = 2; row <= worksheet.Dimension.Rows; row++)
                     {
@@ -98,7 +99,11 @@ namespace VisProcess.Controllers
                     _context.SaveChanges();
                 }
 
-                return Ok(new { message = "File processed successfully", newRecords });
+                return Ok(new
+                {
+                    sucsess = true,
+                    message = "File processed successfully"
+                });
             }
             catch (ArgumentException ex)
             {

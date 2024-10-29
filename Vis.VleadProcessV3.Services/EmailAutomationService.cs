@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Client;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Office.Interop.Excel;
 using Renci.SshNet.Messages;
 using System.Collections.Generic;
@@ -160,7 +161,6 @@ namespace Vis.VleadProcessV3.Services
             var LogoPath = _configuration.GetSection("SSRSNetworkCredentials").GetValue<string>("LogoPath");
             var PortfolioPath = _configuration.GetSection("SSRSNetworkCredentials").GetValue<string>("PortfolioPath");
             var FromMail = _configuration.GetSection("Invoice").GetValue<string>("InvoiceFromMail");
-            var defaultToMail = _configuration.GetSection("Invoice").GetValue<string>("InvoiceToDefaultMail");
             var defaultCCMail = _configuration.GetSection("Invoice").GetValue<string>("InvoiceCCDefaultMail");
             var errors = new List<object>();
             var message = new MailMessage();
@@ -214,8 +214,8 @@ namespace Vis.VleadProcessV3.Services
 
                         if (emailNotification != null)
                         {
-                            message.To.Add(new MailAddress(defaultToMail));
-                            message.CC.Add(new MailAddress(defaultCCMail));
+                            if (!defaultCCMail.ToString().IsNullOrEmpty())
+                                message.CC.Add(new MailAddress(defaultCCMail));
                             var annexureCheck = tableWork.InvoiceMasterRepository.Get(x => x.InvoiceNo == invoiceNumber && x.IsDeleted == false).FirstOrDefault();
                             if (emailNotification.ToEmailId != null)
                             {
@@ -509,8 +509,8 @@ namespace Vis.VleadProcessV3.Services
                     {
                         if (emailNotification != null)
                         {
-                            message.To.Add(new MailAddress(defaultToMail));
-                            message.CC.Add(new MailAddress(defaultCCMail));
+                            if (!defaultCCMail.ToString().IsNullOrEmpty())
+                                message.CC.Add(new MailAddress(defaultCCMail));
 
                             if (emailNotification.ToEmailId != null)
                             {

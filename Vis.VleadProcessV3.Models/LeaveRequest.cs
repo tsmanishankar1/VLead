@@ -10,13 +10,7 @@ namespace Vis.VleadProcessV3.Models
     {
         public int Id { get; set; }
         public int EmployeeId { get; set; }
-        public LeaveCategory LeaveCategory { get; set; }
-        public string LeaveCategoryName
-        {
-            get => LeaveCategory.ToString();
-            set => LeaveCategory = Enum.Parse<LeaveCategory>(value);
-        }
-
+        public string LeaveCategory { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string Comments { get; set; }
