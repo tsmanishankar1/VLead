@@ -8,12 +8,8 @@ namespace Vis.VleadProcessV3.Models
 {
     public class CustomerInvoiceRequest
     {
-        public List<CustomerInvoiceInfo> request { get; set; }
-
-    }
-    public class CustomerInvoiceInfo
-    {
         public string? InvoiceNo { get; set; }
-        public int CustomerId { get; set; }
+        public string CustomerId { get; set; }
+
     }
 }

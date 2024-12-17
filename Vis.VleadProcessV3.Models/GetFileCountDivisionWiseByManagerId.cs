@@ -10,7 +10,9 @@ namespace Vis.VleadProcessV3.Models
     [Keyless]
     public partial class GetFileCountDivisionWiseByManagerId_Result
     {
-        public string Department { get; set; }
+        public string Division { get; set; }
+        public int ClientId { get; set; }
+        public string CustomerName { get; set; }
         public int FilesCountCurrentMonth { get; set; }
         public int FilesCountPreviousMonth { get; set; }
         public int FileCountDifference { get; set; }

@@ -10,8 +10,10 @@ namespace Vis.VleadProcessV3.Models
     {
         public int DivisionId { get; set; }
         public int ClientId { get; set; }
-        public int ScopeId { get; set; }
-        public int EmployeeId { get; set; }
+        public int? ScopeId { get; set; }
+        public string? Process {  get; set; }
+        public int? JobStatusId { get; set; }
+        public int? EmployeeId { get; set; }
         public int ProductivityNorm { get; set; }
         public string WorkMode { get; set; }
         public int CreatedBy { get; set; }

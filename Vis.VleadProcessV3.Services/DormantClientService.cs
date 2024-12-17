@@ -27,30 +27,12 @@ namespace Vis.VleadProcessV3.Services
 
         public List<DormantClient> GetDormantClient(int managerId)
         {
-            var sixtyDaysAgo = DateTime.Now.AddDays(-60);
-
-            var result = (from jo in _context.JobOrders
-                          join cm in _context.CustomerVsManagers on jo.ClientId equals cm.CustomerId
-                          join c in _context.Customers on jo.ClientId equals c.Id
-                          where cm.ManagerId == managerId
-&& jo.IsDeleted == false
-&& cm.IsDeleted == false
-&& c.IsDeleted == false
-                          group jo by new { c.Id, c.ShortName, c.Name } into grouped
-                          where grouped.Max(j => j.JobDate) < sixtyDaysAgo
-                          select new
-                          {
-                              CustomerId = grouped.Key.Id,
-                              ShortName = grouped.Key.ShortName
-                          }).Distinct().ToList();
-
-            var dormantClients = result.Select(item => new DormantClient
+            var parameters = new[]
             {
-                CustomerId = item.CustomerId,
-                CustomerShortName = item.ShortName
-            }).ToList();
-
-            return dormantClients;
+         new SqlParameter("@ManagerId", managerId)
+     };
+            var results = _procedureWork.ExecStoredProcedure<DormantClient>("EXEC GetDormantClient @ManagerId", parameters).ToList();
+            return results;
         }
 
         public string MailSendToDormantClient(int customerId)

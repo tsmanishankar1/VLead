@@ -127,5 +127,29 @@ namespace VisProcess.Controllers
                 return Ok(response);
             }
         }
+
+        [HttpPut("DeleteNorm")]
+        public IActionResult DeleteNorm(int normId)
+        {
+            try
+            {
+                _service.DeleteNorm(normId);
+                var response = new
+                {
+                    Success = true,
+                    Message = "Norm Deleted successfully."
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = new
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+                return Ok(response);
+            }
+        }
     }
 }

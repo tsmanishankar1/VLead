@@ -143,7 +143,7 @@ namespace VisProcess.Controllers
                                                                     continue;
                                                                 }
 
-                                                                int? qcId = string.IsNullOrEmpty(qcIdStr) ? null : (int?)Convert.ToInt32(qcIdStr);
+                                                                string? qcId = string.IsNullOrEmpty(qcIdStr) ? null : qcIdStr;
                                                                 string artistName = string.IsNullOrEmpty(artistStr) ? null : artistStr;
                                                                 string qcName = string.IsNullOrEmpty(qcStr) ? null : qcStr;
                                                                 string clientRevisionComment = string.IsNullOrEmpty(clientRevisionCommentStr) ? null : clientRevisionCommentStr;
@@ -177,7 +177,7 @@ namespace VisProcess.Controllers
                                                                         FileName = dr["File Name"].ToString() != "" ? dr["File Name"].ToString() : null,
                                                                         ArtistId = dr["Artist Id"].ToString() != "" ? dr["Artist Id"].ToString() : null,
                                                                         ArtistName = dr["Artist Name"].ToString() != "" ? dr["Artist Name"].ToString() : null,
-                                                                        QcId = Convert.ToInt32(dr["Qc Id"].ToString() != "" ? dr["Qc Id"].ToString() : null),
+                                                                        QcId = dr["Qc Id"].ToString() != "" ? dr["Qc Id"].ToString() : null,
                                                                         QcName = dr["Qc Name"].ToString() != "" ? dr["Qc Name"].ToString() : null,
                                                                         ClientRevisionComment = dr["Client Revision Comment"].ToString() != "" ? dr["Client Revision Comment"].ToString() : null,
                                                                         ErrorType = dr["Error Type"].ToString() != "" ? dr["Error Type"].ToString() : null,

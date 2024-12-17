@@ -235,6 +235,7 @@ namespace Vis.VleadProcessV3.Services
                         }
 
                         _Cvs.CreatedUtc = DateTime.UtcNow;
+                        _Cvs.CreatedBy = item.CreatedBy;
                         _Cvs.IsDeleted = item.IsDeleted;
                         _Cvs.IsActive = item.IsActive;
                         _unitWork.CustomerVsScope.Add(_Cvs);

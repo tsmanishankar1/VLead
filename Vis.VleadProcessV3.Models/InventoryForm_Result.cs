@@ -12,6 +12,8 @@ namespace Vis.VleadProcessV3.Models
     {
         public string? JobId { get; set; }
 
+        public int? DepartmentId { get; set; }
+
         public string? DeptName { get; set; }
 
         public string? ShortName { get; set; }
@@ -21,5 +23,7 @@ namespace Vis.VleadProcessV3.Models
         public string? DivisionName { get; set; }
 
         public string? FileName { get; set; }
+
+        public DateTime? DateOfDelivery { get; set; }
     }
 }

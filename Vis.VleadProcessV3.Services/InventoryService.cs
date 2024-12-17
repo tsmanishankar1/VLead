@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using Vis.VleadProcessV3.Models;
@@ -90,50 +91,94 @@ namespace Vis.VleadProcessV3.Services
 
         public Object SubmitInventory(InventorySubmitPara jobInventorySubmit)
         {
-            //int counter = 0;
             var invSubmitDetails = jobInventorySubmit.InventorySubmit.ToList();
             var result = new
             {
                 Success = false,
                 Message = " "
             };
+
             try
             {
+                // Preload required data into dictionaries for quick lookups
+                var customerDictionary = _context.Customers
+                    .Where(x => invSubmitDetails.Select(v => v.ShortName).Contains(x.ShortName) && !x.IsDeleted)
+                    .ToDictionary(x => x.ShortName, x => x.Id);
+
+                var divisionDictionary = _context.Divisions
+                    .Where(x => invSubmitDetails.Select(v => v.DivisionName).Contains(x.DivisionName) && x.IsDeleted == false)
+                    .ToDictionary(x => x.DivisionName, x => x.Id);
+
+                var existingInventories = _context.Inventory
+                    .Where(x => invSubmitDetails.Select(v => v.JobId).Contains(x.JobId) && x.IsDeleted == false)
+                    .ToList();
+
+                var jobOrdersToUpdate = new List<JobOrder>();
+                var inventoriesToUpdate = new List<Inventory>();
+                var inventoriesToInsert = new List<Inventory>();
+
+                // HashSets for faster existence checks
+                var jobIds = new HashSet<string>(existingInventories.Select(x => x.JobId));
+
                 foreach (var inventorySubmitViewModel in invSubmitDetails)
                 {
-                    var checkexists = _tableWork.InventoryFormSubmitRepository.GetSingle(x => x.JobId == inventorySubmitViewModel.JobId && x.IsDeleted == false);
-                    if (checkexists != null)
+                    if (!jobIds.Contains(inventorySubmitViewModel.JobId))
                     {
-
-                        result = new
+                        inventoriesToInsert.Add(new Inventory
                         {
-                            Success = false,
-                            Message = "Already Exists!"
-
-                        };
-                        continue;
-
+                            JobId = inventorySubmitViewModel.JobId,
+                            DeptName = inventorySubmitViewModel.DeptName,
+                            DepartmentId = inventorySubmitViewModel.DepartmentId,
+                            CustId = customerDictionary.TryGetValue(inventorySubmitViewModel.ShortName, out var custId) ? custId : (int?)null,
+                            ShortName = inventorySubmitViewModel.ShortName,
+                            ProjectCode = inventorySubmitViewModel.ProjectCode,
+                            DivisionId = divisionDictionary.TryGetValue(inventorySubmitViewModel.DivisionName, out var divisionId) ? divisionId : (int?)null,
+                            DivisionName = inventorySubmitViewModel.DivisionName,
+                            FileName = inventorySubmitViewModel.FileName,
+                            EffectiveFrom = jobInventorySubmit.EffectiveFrom,
+                            EffectiveTo = jobInventorySubmit.EffectiveTo,
+                            DateOfDelivery = jobInventorySubmit.DateOfDelivery,
+                            Remarks = jobInventorySubmit.Remarks,
+                            IsDeleted = false,
+                            CreatedBy = inventorySubmitViewModel.CreatedBy,
+                            CreatedUtc = DateTime.UtcNow
+                        });
                     }
                     else
                     {
-                        var checkJobOrder = _tbWork.JobOrderRepository.GetSingle(x => x.JobId == inventorySubmitViewModel.JobId && x.IsDeleted == false);
+                        // Update JobOrder and existing Inventory records if necessary
+                        var checkJobOrder = _tbWork.JobOrderRepository
+                            .GetSingle(x => x.JobId == inventorySubmitViewModel.JobId && !x.IsDeleted);
 
                         if (checkJobOrder != null)
                         {
                             checkJobOrder.DateofDelivery = jobInventorySubmit.DateOfDelivery;
                             checkJobOrder.UpdatedBy = Convert.ToInt32(inventorySubmitViewModel.CreatedBy);
-                            checkJobOrder.UpdatedUtc = DateTime.Now;
-                            _tbWork.JobOrderRepository.Update(checkJobOrder);
+                            checkJobOrder.UpdatedUtc = DateTime.UtcNow;
+                            jobOrdersToUpdate.Add(checkJobOrder);
                         }
 
-                        var invForm = new Inventory
+                        var existingInventoryRecords = existingInventories
+                            .Where(x => x.JobId == inventorySubmitViewModel.JobId && x.IsDeleted == false)
+                            .ToList();
+
+                        foreach (var item in existingInventoryRecords)
+                        {
+                            item.IsDeleted = true;
+                            item.UpdatedBy = inventorySubmitViewModel.CreatedBy;
+                            item.UpdatedUtc = DateTime.UtcNow;
+                            inventoriesToUpdate.Add(item);
+                        }
+
+                        inventoriesToInsert.Add(new Inventory
                         {
                             JobId = inventorySubmitViewModel.JobId,
                             DeptName = inventorySubmitViewModel.DeptName,
-                            CustId = _context.Customers.Where(x => x.ShortName == inventorySubmitViewModel.ShortName && x.IsDeleted == false).Select(x => x.Id).FirstOrDefault(),
+                            DepartmentId = inventorySubmitViewModel.DepartmentId,
+                            CustId = customerDictionary.TryGetValue(inventorySubmitViewModel.ShortName, out var custId) ? custId : (int?)null,
                             ShortName = inventorySubmitViewModel.ShortName,
                             ProjectCode = inventorySubmitViewModel.ProjectCode,
-                            DivisionId = _context.Divisions.Where(x => x.DivisionName == inventorySubmitViewModel.DivisionName && x.IsDeleted == false).Select(x => x.Id).FirstOrDefault(),
+                            DivisionId = divisionDictionary.TryGetValue(inventorySubmitViewModel.DivisionName, out var divisionId) ? divisionId : (int?)null,
                             DivisionName = inventorySubmitViewModel.DivisionName,
                             FileName = inventorySubmitViewModel.FileName,
                             EffectiveFrom = jobInventorySubmit.EffectiveFrom,
@@ -141,36 +186,38 @@ namespace Vis.VleadProcessV3.Services
                             DateOfDelivery = jobInventorySubmit.DateOfDelivery,
                             IsDeleted = false,
                             CreatedBy = inventorySubmitViewModel.CreatedBy,
-                            CreatedUTC = DateTime.Now
-
-                        };
-                        _tableWork.InventoryFormSubmitRepository.Insert(invForm);
-                        result = new
-                        {
-                            Success = true,
-                            Message = "InventoryForm inserted successfully!"
-
-                        };
-
+                            CreatedUtc = DateTime.UtcNow
+                        });
                     }
                 }
-                _tableWork.SaveChanges();
 
+                // Bulk update and insert in a single transaction
+                if (jobOrdersToUpdate.Any())
+                    _context.JobOrders.UpdateRange(jobOrdersToUpdate);
 
-            }
+                if (inventoriesToUpdate.Any())
+                    _context.Inventory.UpdateRange(inventoriesToUpdate);
 
-            catch (Exception)
-            {
+                if (inventoriesToInsert.Any())
+                    _context.Inventory.AddRange(inventoriesToInsert);
+
+                _context.SaveChanges();
 
                 result = new
                 {
                     Success = true,
-                    Message = "Error while inserting!"
-
+                    Message = "InventoryForm inserted successfully!"
                 };
-
-                throw;
             }
+            catch (Exception ex)
+            {
+                result = new
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+            }
+
             return result;
         }
     }

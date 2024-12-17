@@ -12,10 +12,11 @@ namespace Vis.VleadProcessV3.Models
         public string Division { get; set; }
         public int ClientId { get; set; }
         public string Client { get; set; }
-        public int ScopeId { get; set; }
+        public int? ScopeId { get; set; }
         public string Scope { get; set; }
-        public int EmployeeId { get; set; }
-        public string Employee { get; set; }
+        public string? Process {  get; set; }
+        public int? JobStatusId { get; set; }
+        public string? JobStatus { get; set; }
         public int ProductivityNorm { get; set; }
         public DateTime EffectiveFromDate { get; set; }
         public string WorkMode { get; set; }

@@ -24,19 +24,26 @@ namespace Vis.VleadProcessV3.Models
 
         public string? DivisionName { get; set; }
 
-        public string FileName { get; set; } = null!;
+        public string? FileName { get; set; }
 
         public DateTime? EffectiveFrom { get; set; }
 
         public DateTime? EffectiveTo { get; set; }
 
-        public bool IsDeleted { get; set; }
+        public bool? IsDeleted { get; set; }
 
         public string? CreatedBy { get; set; }
 
-        public DateTime? CreatedUTC { get; set; }
+        public DateTime? CreatedUtc { get; set; }
 
         public DateTime? DateOfDelivery { get; set; }
 
+        public string? UpdatedBy { get; set; }
+
+        public DateTime? UpdatedUtc { get; set; }
+
+        public string? Remarks { get; set; }
+
+        public int DepartmentId { get; set; }
     }
 }

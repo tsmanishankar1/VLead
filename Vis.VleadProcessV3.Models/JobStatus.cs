@@ -31,6 +31,8 @@ public partial class JobStatus
 
     public virtual ICollection<JobStatusExt> JobStatusExts { get; } = new List<JobStatusExt>();
 
+    public virtual ICollection<Norm> Norms { get; set; } = new List<Norm>();
+
     public virtual ICollection<ProcessWorkFlowTran> ProcessWorkFlowTrans { get; } = new List<ProcessWorkFlowTran>();
 
     public virtual Employee? UpdatedByNavigation { get; set; }

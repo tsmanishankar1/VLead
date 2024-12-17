@@ -33,7 +33,7 @@ namespace Vis.VleadProcessV3.Models
 
         public string? ArtistName { get; set; }
 
-        public int? QcId { get; set; }
+        public string? QcId { get; set; }
 
         public string? QcName { get; set; }
 

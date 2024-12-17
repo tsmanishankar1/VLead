@@ -21,18 +21,19 @@ namespace Vis.VleadProcessV3.ViewModels
 
         public string FileName { get; set; } = null!;
 
-        public string? CreatedBy { get; set; }
-
+        public string CreatedBy { get; set; }
+        public int DepartmentId { get; set; }
     }
 
     public class InventorySubmitPara
     {
         public List<InventorySubmit> InventorySubmit { get; set; } = null!;
 
-        public DateTime? EffectiveFrom { get; set; }
+        public DateTime EffectiveFrom { get; set; }
 
         public DateTime? EffectiveTo { get; set; }
 
         public DateTime? DateOfDelivery { get; set; }
+        public string? Remarks { get; set; }
     }
 }

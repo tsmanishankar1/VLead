@@ -26,16 +26,10 @@ namespace VisProcess.Controllers
         {
             try
             {
-                if (file == null || file.Length == 0)
-                    return BadRequest(new { message = "Please upload a valid Excel file." });
-
-                var employee = _context.Employees.FirstOrDefault(e => e.EmployeeId == employeeId);
-                if (employee == null)
-                    return BadRequest(new { message = $"Employee with id {employeeId} does not exist." });
 
                 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-                var newRecords = new List<AttendanceSheet>();
+                var message = string.Empty;
 
                 using (var package = new ExcelPackage(file.OpenReadStream()))
                 {
@@ -43,27 +37,22 @@ namespace VisProcess.Controllers
 
                     for (int row = 2; row <= worksheet.Dimension.Rows; row++)
                     {
-                        int.TryParse(worksheet.Cells[row, 1].Text, out int sNo);
-                        if (sNo == 0)
-                        {
-                            return BadRequest(new { message = "Sno cannot be null or zero." });
-                        }
-
-                        var existingRecord = _context.AttendanceSheets.FirstOrDefault(x => x.Sno == sNo);
+                        string StaffId = worksheet.Cells[row, 2].Text;
+                        string Date = worksheet.Cells[row, 7].Text;
+                        var existingRecord = _context.AttendanceSheet.FirstOrDefault(x => x.StaffId == StaffId && x.Date == Date);
                         if (existingRecord != null)
                         {
-                            return BadRequest(new { message = $"Duplicate found for S.No: {sNo}. Record already exists." });
+                            message = message + $"Duplicate found for StaffId: {StaffId} for Date: {Date}, ";
                         }
 
-                        int.TryParse(worksheet.Cells[row, 15].Text, out int absent);
-                        int.TryParse(worksheet.Cells[row, 14].Text, out int present);
-                        int.TryParse(worksheet.Cells[row, 16].Text, out int weeklyHoliday);
-                        int.TryParse(worksheet.Cells[row, 17].Text, out int total);
-                        bool.TryParse(worksheet.Cells[row, 13].Text, out bool isBreakExceeded);
+                        decimal.TryParse(worksheet.Cells[row, 19].Text, out decimal absent);
+                        decimal.TryParse(worksheet.Cells[row, 20].Text, out decimal present);
+                        decimal.TryParse(worksheet.Cells[row, 21].Text, out decimal weeklyHoliday);
+                        decimal.TryParse(worksheet.Cells[row, 22].Text, out decimal total);
+                        bool.TryParse(worksheet.Cells[row, 12].Text, out bool isBreakExceeded);
 
                         var report = new AttendanceSheet
                         {
-                            Sno = sNo,
                             StaffId = worksheet.Cells[row, 2].Text,
                             Name = worksheet.Cells[row, 3].Text,
                             Department = worksheet.Cells[row, 4].Text,
@@ -75,12 +64,12 @@ namespace VisProcess.Controllers
                             TotalHoursWorked = worksheet.Cells[row, 10].Text,
                             BreakHours = worksheet.Cells[row, 11].Text,
                             IsBreakExceeded = isBreakExceeded,
-                            ProductiveHours = worksheet.Cells[row, 12].Text,
-                            AttendanceStatus = worksheet.Cells[row, 18].Text,
-                            EarlyEntry = worksheet.Cells[row, 19].Text,
-                            LateEntry = worksheet.Cells[row, 20].Text,
-                            EarlyExit = worksheet.Cells[row, 21].Text,
-                            ExtraHoursWorked = worksheet.Cells[row, 22].Text,
+                            ProductiveHours = worksheet.Cells[row, 13].Text,
+                            AttendanceStatus = worksheet.Cells[row, 14].Text,
+                            EarlyEntry = worksheet.Cells[row, 15].Text,
+                            LateEntry = worksheet.Cells[row, 16].Text,
+                            EarlyExit = worksheet.Cells[row, 17].Text,
+                            ExtraHoursWorked = worksheet.Cells[row, 18].Text,
                             Absent = absent,
                             Present = present,
                             WeeklyHoliday = weeklyHoliday,
@@ -89,20 +78,17 @@ namespace VisProcess.Controllers
                             CreatedAt = DateTime.UtcNow
                         };
 
-                        newRecords.Add(report);
+                        _context.AttendanceSheet.Add(report);
+                        _context.SaveChanges();
                     }
                 }
 
-                if (newRecords.Any())
-                {
-                    _context.AttendanceSheets.AddRange(newRecords);
-                    _context.SaveChanges();
-                }
+                //_context.AttendanceSheets.AddRange(newRecords);
 
                 return Ok(new
                 {
                     sucsess = true,
-                    message = "File processed successfully"
+                    message = $"File processed successfully. {message}"
                 });
             }
             catch (ArgumentException ex)

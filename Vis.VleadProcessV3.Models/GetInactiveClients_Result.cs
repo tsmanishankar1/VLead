@@ -11,6 +11,7 @@ namespace Vis.VleadProcessV3.Models
     public class GetInactiveClients_Result
     {
         public string Name { get; set; }
+        public string ShortName { get; set; }
         public DateTime? LastReceivedFileDate { get; set; }
     }
 }

@@ -109,32 +109,31 @@ namespace Vis.VleadProcessV3.Services
             {
                 if (pricingViewModel.AddCountDatas.Count() == 0)
                 {
-                    PricingWithScope savePricingWithScopes = new PricingWithScope();
-                    savePricingWithScopes.CustomerId = pricingViewModel.CustomerId;
-                    savePricingWithScopes.DepartmentId = pricingViewModel.DepartmentId;
-                    savePricingWithScopes.ScopeId = pricingViewModel.ScopeId;
-                    savePricingWithScopes.PricingTypeId = pricingViewModel.PricingTypeId;
-                    savePricingWithScopes.JobStatusId = pricingViewModel.JobStatusId;
-                    savePricingWithScopes.From = pricingViewModel.FromRange;
-                    savePricingWithScopes.To = pricingViewModel.ToRange;
-                    savePricingWithScopes.WefromDate = pricingViewModel.WEFromDate;
-                    savePricingWithScopes.Price = pricingViewModel.Price;
-                    savePricingWithScopes.IsDelete = false;
-                    savePricingWithScopes.IsApproved = true;
-                    savePricingWithScopes.ScopeTempDesc = pricingViewModel.ScopeTempDesc;
-                    savePricingWithScopes.IsUpdated = false;
-                    savePricingWithScopes.CreatedBy = pricingViewModel.CreatedBy;
-                    savePricingWithScopes.CreatedUtc = DateTime.UtcNow;
-
-                    _unitWork.PricingWithScope.Add(savePricingWithScopes);
+                    PricingWithScope savePricingWithScope = new PricingWithScope();
+                    savePricingWithScope.CustomerId = pricingViewModel.CustomerId;
+                    savePricingWithScope.DepartmentId = pricingViewModel.DepartmentId;
+                    savePricingWithScope.ScopeId = pricingViewModel.ScopeId;
+                    savePricingWithScope.PricingTypeId = pricingViewModel.PricingTypeId;
+                    savePricingWithScope.JobStatusId = pricingViewModel.JobStatusId;
+                    savePricingWithScope.From = pricingViewModel.FromRange;
+                    savePricingWithScope.To = pricingViewModel.ToRange;
+                    savePricingWithScope.WefromDate = pricingViewModel.WEFromDate;
+                    savePricingWithScope.Price = pricingViewModel.Price;
+                    savePricingWithScope.ScopeTempDesc = pricingViewModel.ScopeTempDesc;
+                    savePricingWithScope.IsUpdated = false;
+                    savePricingWithScope.CreatedBy = pricingViewModel.CreatedBy;
+                    savePricingWithScope.CreatedUtc = DateTime.UtcNow;
+                    _unitWork.PricingWithScope.Add(savePricingWithScope);
                     _unitWork.SaveChanges();
+                    savePricingWithScope.Id = _unitWork.PricingWithScope.OrderByDescending(x => x.Id).FirstOrDefault().Id;
+                    SendGenricMail(savePricingWithScope.Id, pricingViewModel.DepartmentId, pricingViewModel.CustomerId, pricingViewModel.PricingTypeId, 1);
                 }
                 else
                 {
-                    var priceRanges = pricingViewModel.AddCountDatas;
-                    foreach (var ranges in priceRanges)
+                    foreach (var item in pricingViewModel.AddCountDatas)
                     {
-                        var lastrecordofpricingcount = _unitWork.PricingWithScope.FirstOrDefault(x => x.ScopeId == ranges.ScopeId && x.CustomerId == pricingViewModel.CustomerId && x.WetoDate == null && x.JobStatusId == pricingViewModel.JobStatusId && x.IsDelete != true && x.From == pricingViewModel.FromRange && x.To == pricingViewModel.ToRange && x.IsApproved == true && x.IsUpdated != true); // 
+                        var lastrecordofpricingcount = _unitWork.PricingWithScope.FirstOrDefault(x => x.ScopeId == item.ScopeId && x.CustomerId == pricingViewModel.CustomerId && x.WetoDate == null && x.JobStatusId == pricingViewModel.JobStatusId && x.IsDelete != true && x.From == pricingViewModel.FromRange && x.To == pricingViewModel.ToRange && x.IsApproved == true && x.IsUpdated != true); //
+
                         if (lastrecordofpricingcount != null)
                         {
                             lastrecordofpricingcount.WetoDate = pricingViewModel.WEFromDate.AddDays(-1);
@@ -144,25 +143,24 @@ namespace Vis.VleadProcessV3.Services
                             _unitWork.PricingWithScope.Update(lastrecordofpricingcount);
                             _unitWork.SaveChanges();
                         }
-                        PricingWithScope savePricingWithScopes = new PricingWithScope();
-                        savePricingWithScopes.CustomerId = ranges.CustomerId;
-                        savePricingWithScopes.DepartmentId = ranges.DepartmentId;
-                        savePricingWithScopes.ScopeId = ranges.ScopeId;
-                        savePricingWithScopes.PricingTypeId = ranges.PricingTypeId;
-                        savePricingWithScopes.JobStatusId = ranges.JobStatusId;
-                        savePricingWithScopes.From = ranges.FromRange;
-                        savePricingWithScopes.To = ranges.ToRange;
-                        savePricingWithScopes.WefromDate = ranges.WEFromDate;
-                        savePricingWithScopes.Price = ranges.Price;
-                        savePricingWithScopes.IsDelete = false;
-                        savePricingWithScopes.IsApproved = true;
-                        savePricingWithScopes.ScopeTempDesc = ranges.ScopeTempDesc;
-                        savePricingWithScopes.IsUpdated = false;
-                        savePricingWithScopes.CreatedBy = ranges.CreatedBy;
-                        savePricingWithScopes.CreatedUtc = DateTime.UtcNow;
-
-                        _unitWork.PricingWithScope.Add(savePricingWithScopes);
+                        PricingWithScope savePricingWithScope = new PricingWithScope();
+                        savePricingWithScope.CustomerId = pricingViewModel.CustomerId;
+                        savePricingWithScope.DepartmentId = pricingViewModel.DepartmentId;
+                        savePricingWithScope.ScopeId = item.ScopeId;
+                        savePricingWithScope.PricingTypeId = pricingViewModel.PricingTypeId;
+                        savePricingWithScope.JobStatusId = pricingViewModel.JobStatusId;
+                        savePricingWithScope.From = item.FromRange;
+                        savePricingWithScope.To = item.ToRange;
+                        savePricingWithScope.WefromDate = pricingViewModel.WEFromDate;
+                        savePricingWithScope.Price = item.Price;
+                        savePricingWithScope.ScopeTempDesc = item.ScopeTempDesc;
+                        savePricingWithScope.IsUpdated = false;
+                        savePricingWithScope.CreatedBy = pricingViewModel.CreatedBy;
+                        savePricingWithScope.CreatedUtc = DateTime.UtcNow;
+                        _unitWork.PricingWithScope.Add(savePricingWithScope);
                         _unitWork.SaveChanges();
+                        savePricingWithScope.Id = _unitWork.PricingWithScope.OrderByDescending(x => x.Id).FirstOrDefault().Id;
+                        SendGenricMail(savePricingWithScope.Id, pricingViewModel.DepartmentId, pricingViewModel.CustomerId, pricingViewModel.PricingTypeId, 1);
                     }
                 }
             }

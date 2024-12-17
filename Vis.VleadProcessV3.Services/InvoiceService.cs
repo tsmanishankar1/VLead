@@ -3724,5 +3724,18 @@ namespace Vis.VleadProcessV3.Services
 
             return totalPrice;
         }
+        public object GetTallyInvoiceReport(int clientId, DateTime fromdate, DateTime toDate)
+        {
+            var parameters = new[]
+            {
+                new SqlParameter("@clientid", clientId),
+                new SqlParameter("@fromdate", fromdate),
+                new SqlParameter("@todate", toDate)
+            };
+
+            var results = _procedureWork.ExecStoredProcedure<GetTallyInvoiceReport_Result>("Exec GetTallyInvoiceReport @clientId, @fromdate, @todate", parameters).ToList();
+
+            return results;
+        }
     }
 }

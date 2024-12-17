@@ -143,6 +143,7 @@ namespace Vis.VleadProcessV3.Services
         }
         public async Task<object> SendInvoicesToClients(CustomerInvoiceRequest request, string type)
         {
+            string pdfFilePath = "";
             var host = _configuration.GetSection("Smtp").GetValue<string>("host");
             var port = _configuration.GetSection("Smtp").GetValue<int>("port");
             var userName = _configuration.GetSection("Smtp").GetValue<string>("userName1");
@@ -159,8 +160,9 @@ namespace Vis.VleadProcessV3.Services
 
             var TempPath = _configuration.GetSection("SSRSNetworkCredentials").GetValue<string>("TempFilePath");
             var LogoPath = _configuration.GetSection("SSRSNetworkCredentials").GetValue<string>("LogoPath");
-            var PortfolioPath = _configuration.GetSection("SSRSNetworkCredentials").GetValue<string>("PortfolioPath");
+            var PortfolioLink = _configuration.GetSection("SSRSNetworkCredentials").GetValue<string>("PortfolioLink");
             var FromMail = _configuration.GetSection("Invoice").GetValue<string>("InvoiceFromMail");
+            var fromName = _configuration.GetSection("Invoice").GetValue<string>("InvoiceSenderName");
             var defaultCCMail = _configuration.GetSection("Invoice").GetValue<string>("InvoiceCCDefaultMail");
             var errors = new List<object>();
             var message = new MailMessage();
@@ -177,306 +179,320 @@ namespace Vis.VleadProcessV3.Services
 
             //// Get the month name and year
             string monthName = " ";
-            string invoiceMonthName = now.AddMonths(-1).Month.ToString("MMMM", CultureInfo.InvariantCulture);
+            string invoiceMonthName = now.AddMonths(-1).ToString("MMMM", CultureInfo.InvariantCulture);
             int invoiceYear = now.Year;
             int lastYear = previousMonth.Year;
             //string invoiceYear = year.ToString();
 
             if (type == "Invoice")
             {
-                foreach (var details in request.request)
+                int customerId = int.Parse(request.CustomerId);
+                var invoiceNos = request.InvoiceNo.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+                //
+                StringBuilder receipientNamesBuilder = new StringBuilder();
+                var customer = tableWork.CustomerRepository
+                    .Get(x => x.Id == customerId && x.IsDeleted == false)
+                    .FirstOrDefault();
+
+                try
                 {
-                    int customerId = details.CustomerId;
-                    string invoiceNumber = details.InvoiceNo;
-                    StringBuilder receipientNamesBuilder = new StringBuilder();
-                    var customer = tableWork.CustomerRepository
-                        .Get(x => x.Id == customerId && x.IsDeleted == false)
+                    var emailNotification = db.EmailContactNotifications
+                        .Where(x => x.CustomerId == customerId && x.IsActive == true && x.Type == type)
+                        .OrderByDescending(x => x.Id)
                         .FirstOrDefault();
-                    var invoiceDetails = db.InvoiceMasters
-                        .Where(x => x.InvoiceNo == details.InvoiceNo && x.IsDeleted == false)
-                        .FirstOrDefault();
-                    if (invoiceDetails.InvoiceMonth != null && invoiceDetails.InvoiceYear != null)
+
+                    if (emailNotification != null)
                     {
-                        invoiceMonthName = new DateTime(1, (int)invoiceDetails.InvoiceMonth, 1).ToString("MMMM", CultureInfo.InvariantCulture);
-                        invoiceYear = (int)invoiceDetails.InvoiceYear;
-                    }
-
-                    try
-                    {
-                        string InvoiceReportUrl = $"{ReportServerUrl}/{InvoiceReportPath}&rs:Command=Render&InvoiceNo={invoiceNumber}&rs:Format=PDF";
-                        string ArtworkReportUrl = $"{ReportServerUrl}/{ArtworkReportPath}&rs:Command=Render&InvoiceNo={invoiceNumber}&rs:Format=PDF";
-                        string DigitizingReportUrl = $"{ReportServerUrl}/{DigitizingReportPath}&rs:Command=Render&InvoiceNo={invoiceNumber}&rs:Format=PDF";
-
-                        var emailNotification = db.EmailContactNotifications
-                            .Where(x => x.CustomerId == customerId && x.IsActive == true && x.Type == type)
-                            .OrderByDescending(x => x.Id)
-                            .FirstOrDefault();
-
-                        if (emailNotification != null)
+                        if (!defaultCCMail.ToString().IsNullOrEmpty())
                         {
-                            if (!defaultCCMail.ToString().IsNullOrEmpty())
-                                message.CC.Add(new MailAddress(defaultCCMail));
+                            var defaultCCEmail = defaultCCMail.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+                            foreach (var email in defaultCCEmail)
+                            {
+                                message.CC.Add(new MailAddress(email));
+                            }
+                        }
+                        if (emailNotification.ToEmailId != null)
+                        {
+                            var toEmailIds = emailNotification.ToEmailId.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+                            foreach (var item in toEmailIds)
+                            {
+                                var toresult = tableWork.CustomerContactRepository.Get(x => x.Id == int.Parse(item) && x.IsDeleted == false)
+                                    .FirstOrDefault();
+                                if (toresult != null)
+                                {
+                                    message.To.Add(new MailAddress(toresult.Email));
+                                    receipientNamesBuilder.Append(toresult.ContactName);
+                                    receipientNamesBuilder.Append("/ ");
+                                }
+                            }
+                        }
+                        if (emailNotification.CcEmailId != null)
+                        {
+                            var ccEmailIds = emailNotification.CcEmailId.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+                            foreach (var item in ccEmailIds)
+                            {
+                                var ccresult = tableWork.CustomerContactRepository.Get(x => x.Id == int.Parse(item) && x.IsDeleted == false)
+                                    .Select(x => x.Email)
+                                    .FirstOrDefault();
+                                if (ccresult != null)
+                                    message.CC.Add(new MailAddress(ccresult));
+                            }
+                        }
+                        InvoiceMaster latestInvoice = null;
+                        foreach (string invoiceNumber in invoiceNos)
+                        {
+                            string InvoiceReportUrl = $"{ReportServerUrl}/{InvoiceReportPath}&rs:Command=Render&InvoiceNo={invoiceNumber}&rs:Format=PDF";
+                            string ArtworkReportUrl = $"{ReportServerUrl}/{ArtworkReportPath}&rs:Command=Render&InvoiceNo={invoiceNumber}&rs:Format=PDF";
+                            string DigitizingReportUrl = $"{ReportServerUrl}/{DigitizingReportPath}&rs:Command=Render&InvoiceNo={invoiceNumber}&rs:Format=PDF";
+
                             var annexureCheck = tableWork.InvoiceMasterRepository.Get(x => x.InvoiceNo == invoiceNumber && x.IsDeleted == false).FirstOrDefault();
-                            if (emailNotification.ToEmailId != null)
+                            if (annexureCheck.InvoiceMonth != null && annexureCheck.InvoiceYear != null)
                             {
-                                var toEmailIds = emailNotification.ToEmailId.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
-                                foreach (var item in toEmailIds)
-                                {
-                                    var toresult = tableWork.CustomerContactRepository.Get(x => x.Id == int.Parse(item) && x.IsDeleted == false)
-                                        .FirstOrDefault();
-                                    if (toresult != null)
-                                    {
-                                        message.To.Add(new MailAddress(toresult.Email));
-                                        receipientNamesBuilder.Append(toresult.ContactName);
-                                        receipientNamesBuilder.Append("/ ");
-                                    }
-                                }
+                                invoiceMonthName = new DateTime(1, (int)annexureCheck.InvoiceMonth, 1).ToString("MMMM", CultureInfo.InvariantCulture);
+                                invoiceYear = (int)annexureCheck.InvoiceYear;
                             }
-                            if (emailNotification.CcEmailId != null)
+                            if (latestInvoice == null ||
+                                annexureCheck.InvoiceYear > latestInvoice.InvoiceYear ||
+                                (annexureCheck.InvoiceYear == latestInvoice.InvoiceYear && annexureCheck.InvoiceMonth > latestInvoice.InvoiceMonth))
                             {
-                                var ccEmailIds = emailNotification.CcEmailId.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
-                                foreach (var item in ccEmailIds)
-                                {
-                                    var ccresult = tableWork.CustomerContactRepository.Get(x => x.Id == int.Parse(item) && x.IsDeleted == false)
-                                        .Select(x => x.Email)
-                                        .FirstOrDefault();
-                                    if (ccresult != null)
-                                        message.CC.Add(new MailAddress(ccresult));
-                                }
+                                latestInvoice = annexureCheck;  // Store the latest invoice
                             }
-                            if (annexureCheck != null)
+
+                            using (HttpClient client = new HttpClient(new HttpClientHandler { Credentials = new NetworkCredential(userName1, password1) }))
                             {
-                                using (HttpClient client = new HttpClient(new HttpClientHandler { Credentials = new NetworkCredential(userName1, password1) }))
+                                HttpResponseMessage response = await client.GetAsync(InvoiceReportUrl);
+
+                                if (response.IsSuccessStatusCode)
                                 {
-                                    HttpResponseMessage response = await client.GetAsync(InvoiceReportUrl);
-
-                                    if (response.IsSuccessStatusCode)
-                                    {
-                                        byte[] reportBytes = await response.Content.ReadAsByteArrayAsync();
-                                        string pdfFilePath = Path.Combine(TempPath, $"{customer.ShortName}_{invoiceNumber}.pdf");
-                                        await File.WriteAllBytesAsync(pdfFilePath, reportBytes);
-                                        var attachment = new Attachment(pdfFilePath, "application/pdf");
-                                        message.Attachments.Add(attachment);
-                                    }
-                                    else
-                                    {
-                                        var desc1 = invoiceNumber + " not send. To-emails: " + message.To + " and CC-emails: " + message.CC + " because Failed to retrieve the invoice from the server";
-                                        var logtype1 = "Error";
-                                        LogError(customerId, desc1, logtype1);
-                                        errors.Add(new
-                                        {
-                                            customer.ShortName,
-                                            invoiceNumber,
-                                            message = "Failed to retrieve the invoice from the server."
-                                        });
-                                    }
-
-                                    if (annexureCheck.ArtInvoiceAmount > 0)
-                                    {
-                                        using (HttpResponseMessage artworkResponse = await client.GetAsync(ArtworkReportUrl))
-                                        {
-                                            if (artworkResponse.IsSuccessStatusCode)
-                                            {
-                                                byte[] reportBytes = await artworkResponse.Content.ReadAsByteArrayAsync();
-                                                string pdfFilePath = Path.Combine(TempPath, $"{customer.ShortName}_{invoiceNumber}_ArtAnnexure.pdf");
-                                                await File.WriteAllBytesAsync(pdfFilePath, reportBytes);
-                                                var attachment = new Attachment(pdfFilePath, "application/pdf");
-                                                message.Attachments.Add(attachment);
-                                            }
-                                        }
-                                    }
-
-                                    if (annexureCheck.DigiInvoiceAmount > 0)
-                                    {
-                                        using (HttpResponseMessage digiResponse = await client.GetAsync(DigitizingReportUrl))
-                                        {
-                                            if (digiResponse.IsSuccessStatusCode)
-                                            {
-                                                byte[] reportBytes = await digiResponse.Content.ReadAsByteArrayAsync();
-                                                string pdfFilePath = Path.Combine(TempPath, $"{customer.ShortName}_{invoiceNumber}_DigiAnnexure.pdf");
-                                                await File.WriteAllBytesAsync(pdfFilePath, reportBytes);
-                                                var attachment = new Attachment(pdfFilePath, "application/pdf");
-                                                message.Attachments.Add(attachment);
-                                            }
-                                        }
-                                    }
-                                }
-                                string receipientNames = receipientNamesBuilder.ToString().TrimEnd(' ', '/').Trim();
-                                message.From = new MailAddress(FromMail);
-                                var outstandingInvoices = db.InvoiceMasters
-                                                  .Where(x => x.CustomerId == customerId && x.InvoiceMonth < annexureCheck.InvoiceMonth && x.InvoiceYear <= annexureCheck.InvoiceYear && x.IsOutstanding == true && x.IsDeleted == false)
-                                                  .ToList();
-                                if ((annexureCheck.InvoiceYear < lastYear ||
-                                 (annexureCheck.InvoiceYear == lastYear && annexureCheck.InvoiceMonth < lastMonth))
-                                 && annexureCheck.IsOutstanding)
-                                {
-                                    outstandingInvoices.Add(annexureCheck);
-                                }
-                                if (outstandingInvoices.Count > 0)
-                                {
-                                    int sNo = 1;
-                                    var sortedInvoices = outstandingInvoices.OrderByDescending(x => x.InvoiceDate);
-                                    foreach (var items in sortedInvoices)
-                                    {
-                                        bool isInPreviousMonth = items.InvoiceDate.HasValue &&
-                                                                  items.InvoiceDate.Value.Year < DateTime.UtcNow.Year ||
-                                                                  (items.InvoiceDate.Value.Year == DateTime.UtcNow.Year &&
-                                                                  items.InvoiceDate.Value.Month < DateTime.UtcNow.Month);
-                                        //string rowStyle = isInPreviousMonth ? "background-color: yellow;" : "";
-                                        string contentStyle = isInPreviousMonth ? "style='background-color: yellow;'" : "";
-                                        var AdjustmentAmount = tableWork.ReceivableAdjustmentRepository
-                                            .Get(x => x.InvoiceNo == items.InvoiceNo && x.IsInvoiceAdjustment == true)
-                                            .Select(x => x.AdjustmentAmount)
-                                            .FirstOrDefault() ?? 0;
-                                        var outstandindAmount = items.InvoiceValue - AdjustmentAmount;
-                                        var outstandingDays = (DateTime.UtcNow - items.InvoiceDate).Value;
-                                        rows.Append("<tr style='text-align: center;'>");
-                                        rows.Append($"<td><span {contentStyle}>{sNo}</span></td>");
-                                        rows.Append($"<td><span {contentStyle}>{items.InvoiceNo}</span></td>");
-                                        rows.Append($"<td><span {contentStyle}>{items.InvoiceDate?.ToString("dd-MM-yyyy")}</span></td>");
-                                        rows.Append($"<td><span {contentStyle}>{customer.Name}</span></td>");
-                                        rows.Append($"<td><span {contentStyle}>{customer.ShortName}</span></td>");
-                                        rows.Append($"<td><span {contentStyle}>{items.InvoiceValue}</span></td>");
-                                        rows.Append($"<td><span {contentStyle}>{AdjustmentAmount}</span></td>");
-                                        rows.Append($"<td><span {contentStyle}>{outstandindAmount}</span></td>");
-                                        rows.Append($"<td><span {contentStyle}>{((int)outstandingDays.TotalDays)}</span></td>");
-                                        rows.Append("</tr>");
-                                        sNo++;
-                                        InvoiceValueTotal += items.InvoiceValue;
-                                        AmountCollectedTotal += AdjustmentAmount;
-                                        outstandindAmountTotal += outstandindAmount;
-                                    }
-                                    string subject = $"{invoiceMonthName} {invoiceYear} invoice/Pending Invoice from VLead ";
-                                    var body = "<div style = 'font-family: \"Bookman Old Style\", serif; line-height: 1.5em;'>Hi " + receipientNames + ",<br><br>" +
-                                               "Please find attached the invoice for the orders completed in the month of " + invoiceMonthName + " " + invoiceYear + ".<br><br>" +
-                                               "As per our record the payments for the following invoices is still pending and it is highlighted below, please do the needful at the earliest." +
-                                               "Many thanks for your help and understanding.<br><br>" +
-                                               "<br>" + "<table border = '1' style = 'border: 5px;' > " +
-                                               "<tr style='text-align: center;'>" +
-                                               "<th style='background-color:#e6e6e6; color: #595959;'>S.No</th>" +
-                                               "<th style='background-color:#e6e6e6; color: #595959;'>Invoice No</th>" +
-                                               "<th style='background-color:#e6e6e6; color: #595959;'>Invoice Date</th>" +
-                                               "<th style='background-color:#e6e6e6; color: #595959;'>Customer Name</th>" +
-                                               "<th style='background-color:#e6e6e6; color: #595959;'>Customer ShortName</th>" +
-                                               "<th style='background-color:#e6e6e6; color: #595959;'>Invoice Value in $</th>" +
-                                               "<th style='background-color:#e6e6e6; color: #595959;'>Amount Collected in $</th>" +
-                                               "<th style='background-color:#e6e6e6; color: #595959;'>Outstanding amount in $</th>" +
-                                               "<th style='background-color:#e6e6e6; color: #595959;'>O/S Days</th>" +
-                                               "</tr>" +
-                                               "<tbody>" +
-                                               rows +
-                                               "</tbody>" +
-                                               "<tr style='text-align: center;'>" +
-                                               "<td style='background-color:#e6e6e6;'></td>" +
-                                               "<td style='background-color:#e6e6e6;'></td>" +
-                                               "<td style='background-color:#e6e6e6;'></td>" +
-                                               "<td style='background-color:#e6e6e6;'></td>" +
-                                               "<td style='background-color:#e6e6e6;'>Customer Wise Total</td>" +
-                                               "<td style='background-color:#e6e6e6;'>" + InvoiceValueTotal + "</td>" +
-                                               "<td style='background-color:#e6e6e6;'>" + AmountCollectedTotal + "</td>" +
-                                               "<td style='background-color:#e6e6e6;'>" + outstandindAmountTotal + "</td>" +
-                                               "<td style='background-color:#e6e6e6;'></td>" +
-                                               "</tr>" +
-                                               "</table>" +
-                                "<br> If you have any questions about the invoice, please email your queries to <a href = 'mailto:accounting@vleadservices.com'> accounting@vleadservices.com </a> or <a href = 'mailto:marcus@vleadservices.com'> marcus@vleadservices.com </a>.We would be happy to help you.<br><br>" +
-
-                                "<b> Note:</b><br>" +
-                                      "<ul>" +
-                                      "<li> <span style='background-color: yellow;'>If you pay through PayPal mention the email ID as <i> payments@vleadservices.com</mark> </span></i></li>" +
-                                      "<li> <span style='background-color: yellow;'>If you pay through Wire transfer mention the beneficiary name as 'VLead Design Services Private Limited'.</span></li>" +
-                                      "<li> <span style='background-color: yellow;'>If possible, please ask your Accounting team to send us the bank payment transfer advice or PayPal details. This would be useful to track the payment at our end.</span></li>" +
-                                      "<li> <span style='background-color: yellow;'>We do not accept the Check.</span></li>" +
-                                      "</ul><br>" +
-                                      "Many thanks for your business.<br><br>" +
-                                      "<span style = 'background-color: #00ffff;'>Check-out our new corporate video in <a href = 'https://www.youtube.com/watch?v=Hf5BlwIzdGc'style='color: #000000;'><b>Youtube</b></a> with our updated services and people and processes behind it</span><br><br>" +
-                                      "<span style = 'background-color: #000000;'><a href = '" + PortfolioPath + "' style='color: #ffffff;'> DOWNLOAD OUR PORTFOLIO </a></span><br><br>" +
-                                      "Warm regards and good luck, Accounting Team</div>" +
-                                      "<img src=\"" + LogoPath + "\">" +
-                                "<div style = 'font-family: \"Bookman Old Style\", serif;'><br><i>Referrals are the lifeblood of our business.If you have a friend, business associate, or organization that can benefit from our experience and expert service, please contact <a href = 'mailto:marcus@vleadservices.com'> marcus@vleadservices.com </a>.Your referrals are the greatest compliment we can receive.Please do not keep us a secret!!!<br><br>" +
-                                "<a href='mailto:accounting@vleadservices.com'>accounting@vleadservices.com</a><br>" +
-                                "<a href='http://www.vleadservices.com'>www.vleadservices.com</a></i></div>";
-                                    message.Subject = subject;
-                                    message.Body = body;
-                                    message.IsBodyHtml = true;
+                                    byte[] reportBytes = await response.Content.ReadAsByteArrayAsync();
+                                    pdfFilePath = Path.Combine(TempPath, $"{customer.ShortName}_{invoiceNumber}.pdf");
+                                    await File.WriteAllBytesAsync(pdfFilePath, reportBytes);
+                                    var attachment = new Attachment(pdfFilePath, "application/pdf");
+                                    message.Attachments.Add(attachment);
                                 }
                                 else
                                 {
-                                    message.Subject = invoiceMonthName + " " + invoiceYear + " Invoice from VLead";
-                                    var body = "<div style = 'font-family: \"Bookman Old Style\", serif; line-height: 1.5em;'>Hi " + receipientNames + ",<br><br>" +
-                                    "Please find attached the invoice for the orders completed in the month of " + invoiceMonthName + " " + annexureCheck.InvoiceYear + ".<br><br>" +
-                                    "Many thanks for your help and understanding.<br><br>" +
-
-                                    " If you have any questions about the invoice, please email your queries to <a href = 'mailto:accounting@vleadservices.com'> accounting@vleadservices.com </a> or <a href = 'mailto:marcus@vleadservices.com'> marcus@vleadservices.com </a>.We would be happy to help you.<br><br>" +
-
-                                    "<b> Note:</b><br>" +
-                                      "<ul>" +
-                                      "<li> <span style='background-color: yellow;'>If you pay through PayPal mention the email ID as <i> payments@vleadservices.com</mark> </span></i></li>" +
-                                      "<li> <span style='background-color: yellow;'>If you pay through Wire transfer mention the beneficiary name as 'VLead Design Services Private Limited'.</span></li>" +
-                                      "<li> <span style='background-color: yellow;'>If possible, please ask your Accounting team to send us the bank payment transfer advice or PayPal details. This would be useful to track the payment at our end.</span></li>" +
-                                      "<li> <span style='background-color: yellow;'>We do not accept the Check.</span></li>" +
-                                      "</ul><br>" +
-                                          "Many thanks for your business.<br><br>" +
-                                          "<span style = 'background-color: #00ffff;'>Checkout our <a href = 'https://www.youtube.com/watch?v=Hf5BlwIzdGc'style='color: #000000;'><b>Youtube</b></a> video to know more about our services</span><br><br>" +
-                                          "<span style = 'background-color: #000000;'><a href = '" + PortfolioPath + "' style='color: #ffffff;'> DOWNLOAD OUR PORTFOLIO </a></span><br><br>" +
-                                          "Warm regards and good luck, Accounting Team</div>" +
-                                          "<img src=\"" + LogoPath + "\">" +
-                                    "<div style = 'font-family: \"Bookman Old Style\", serif;'><br><i>Referrals are the lifeblood of our business.If you have a friend, business associate, or organization that can benefit from our experience and expert service, please contact <a href = 'mailto:marcus@vleadservices.com'> marcus@vleadservices.com </a>.Your referrals are the greatest compliment we can receive.Please do not keep us a secret!!!<br><br>" +
-
-                                    "<a href = 'mailto:accounting@vleadservices.com'> accounting@vleadservices.com </a><br>" +
-                                    "<a href = 'http://www.vleadservices.com'>www.vleadservices.com </a></i></div>";
-                                    message.Body = body;
-                                    message.IsBodyHtml = true;
+                                    var desc1 = invoiceNumber + " not send. To-emails: " + message.To + " and CC-emails: " + message.CC + " because Failed to retrieve the invoice from the server";
+                                    var logtype1 = "Error";
+                                    LogError(customerId, desc1, logtype1);
+                                    errors.Add(new
+                                    {
+                                        customer.ShortName,
+                                        invoiceNumber,
+                                        message = "Failed to retrieve the invoice from the server."
+                                    });
                                 }
 
-                                using (var smtp = new SmtpClient(host, port))
+                                if (annexureCheck.ArtInvoiceAmount > 0)
                                 {
-                                    smtp.UseDefaultCredentials = defaultCredential;
-                                    smtp.Credentials = new NetworkCredential(userName, password);
-                                    smtp.EnableSsl = Ssl;
-                                    smtp.Send(message);
-                                    success = true;
+                                    using (HttpResponseMessage artworkResponse = await client.GetAsync(ArtworkReportUrl))
+                                    {
+                                        if (artworkResponse.IsSuccessStatusCode)
+                                        {
+                                            byte[] reportBytes = await artworkResponse.Content.ReadAsByteArrayAsync();
+                                            pdfFilePath = Path.Combine(TempPath, $"{customer.ShortName}_{invoiceNumber}_ArtAnnexure.pdf");
+                                            await File.WriteAllBytesAsync(pdfFilePath, reportBytes);
+                                            var attachment = new Attachment(pdfFilePath, "application/pdf");
+                                            message.Attachments.Add(attachment);
+                                        }
+                                    }
                                 }
 
-                                message.Dispose();
-                                var desc = invoiceNumber + " sent successfully. To-emails: " + message.To + " and  CC-emails: " + message.CC;
-                                var logtype = "Success";
-                                LogError(customerId, desc, logtype);
+                                if (annexureCheck.DigiInvoiceAmount > 0)
+                                {
+                                    using (HttpResponseMessage digiResponse = await client.GetAsync(DigitizingReportUrl))
+                                    {
+                                        if (digiResponse.IsSuccessStatusCode)
+                                        {
+                                            byte[] reportBytes = await digiResponse.Content.ReadAsByteArrayAsync();
+                                            pdfFilePath = Path.Combine(TempPath, $"{customer.ShortName}_{invoiceNumber}_DigiAnnexure.pdf");
+                                            await File.WriteAllBytesAsync(pdfFilePath, reportBytes);
+                                            var attachment = new Attachment(pdfFilePath, "application/pdf");
+                                            message.Attachments.Add(attachment);
+                                        }
+                                    }
+                                }
                             }
-                            else
+
+                        }
+                        string receipientNames = receipientNamesBuilder.ToString().TrimEnd(' ', '/').Trim();
+                        message.From = new MailAddress(FromMail, fromName);
+                        var filteredInvoices = db.InvoiceMasters
+                                                .Where(x => invoiceNos.Contains(x.InvoiceNo) && x.CustomerId == customerId && x.IsDeleted == false)
+                                                .ToList();
+                        var outstandingInvoices = db.InvoiceMasters
+                                          .Where(x => x.CustomerId == customerId && x.InvoiceMonth < latestInvoice.InvoiceMonth && x.InvoiceYear <= latestInvoice.InvoiceYear && x.IsOutstanding == true && x.IsDeleted == false)
+                                          .ToList();
+                        var allInvoices = filteredInvoices
+                                            .Union(outstandingInvoices)
+                                            .GroupBy(x => x.InvoiceNo)
+                                            .Select(g => g.First())
+                                            .ToList();
+                        if ((latestInvoice.InvoiceYear < lastYear ||
+                         (latestInvoice.InvoiceYear == lastYear && latestInvoice.InvoiceMonth < lastMonth))
+                         && latestInvoice.IsOutstanding)
+                        {
+                            outstandingInvoices.Add(latestInvoice);
+                        }
+                        if (outstandingInvoices.Count > 0)
+                        {
+                            int sNo = 1;
+                            var sortedInvoices = allInvoices.OrderByDescending(x => x.InvoiceDate);
+                            foreach (var items in sortedInvoices)
                             {
-                                var desc1 = invoiceNumber + " Invoice not found";
-                                var logtype = "Error";
-                                LogError(customerId, desc1, logtype);
-                                errors.Add(new
-                                {
-                                    customer.ShortName,
-                                    invoiceNumber,
-                                    message = "Invoice Not found"
-                                });
+                                bool isInPreviousMonth = items.InvoiceDate.HasValue &&
+                                                          items.InvoiceDate.Value.Year < DateTime.UtcNow.Year ||
+                                                          (items.InvoiceDate.Value.Year == DateTime.UtcNow.Year &&
+                                                          items.InvoiceDate.Value.Month < DateTime.UtcNow.Month);
+                                //string rowStyle = isInPreviousMonth ? "background-color: yellow;" : "";
+                                string contentStyle = isInPreviousMonth ? "style='background-color: yellow;'" : "";
+                                var AdjustmentAmount = tableWork.ReceivableAdjustmentRepository
+                                    .Get(x => x.InvoiceNo == items.InvoiceNo && x.IsInvoiceAdjustment == true)
+                                    .Select(x => x.AdjustmentAmount)
+                                    .FirstOrDefault() ?? 0;
+                                var outstandindAmount = items.InvoiceValue - AdjustmentAmount;
+                                var outstandingDays = (DateTime.UtcNow - items.InvoiceDate).Value;
+                                rows.Append("<tr style='text-align: center;'>");
+                                rows.Append($"<td><span {contentStyle}>{sNo}</span></td>");
+                                rows.Append($"<td><span {contentStyle}>{items.InvoiceNo}</span></td>");
+                                rows.Append($"<td><span {contentStyle}>{items.InvoiceDate?.ToString("dd-MM-yyyy")}</span></td>");
+                                rows.Append($"<td><span {contentStyle}>{customer.Name}</span></td>");
+                                rows.Append($"<td><span {contentStyle}>{customer.ShortName}</span></td>");
+                                rows.Append($"<td><span {contentStyle}>{items.InvoiceValue}</span></td>");
+                                rows.Append($"<td><span {contentStyle}>{AdjustmentAmount}</span></td>");
+                                rows.Append($"<td><span {contentStyle}>{outstandindAmount}</span></td>");
+                                rows.Append($"<td><span {contentStyle}>{((int)outstandingDays.TotalDays)}</span></td>");
+                                rows.Append("</tr>");
+                                sNo++;
+                                InvoiceValueTotal += items.InvoiceValue;
+                                AmountCollectedTotal += AdjustmentAmount;
+                                outstandindAmountTotal += outstandindAmount;
                             }
+                            string subject = $"{invoiceMonthName} {invoiceYear} invoice/Pending Invoice from VLead ";
+                            var body = "<div style = 'font-family: \"Bookman Old Style\", serif; line-height: 1.5em;'>Hi " + receipientNames + ",<br><br>" +
+                                       "Please find attached the invoice for the orders completed in the month of " + invoiceMonthName + " " + invoiceYear + ".<br><br>" +
+                                       "As per our record the payments for the following invoices is still pending and it is highlighted below, please do the needful at the earliest." +
+                                       "Many thanks for your help and understanding.<br><br>" +
+                                       "<br>" + "<table border = '1' style = 'border: 5px;' > " +
+                                       "<tr style='text-align: center;'>" +
+                                       "<th style='background-color:#e6e6e6; color: #595959;'>S.No</th>" +
+                                       "<th style='background-color:#e6e6e6; color: #595959;'>Invoice No</th>" +
+                                       "<th style='background-color:#e6e6e6; color: #595959;'>Invoice Date</th>" +
+                                       "<th style='background-color:#e6e6e6; color: #595959;'>Customer Name</th>" +
+                                       "<th style='background-color:#e6e6e6; color: #595959;'>Customer ShortName</th>" +
+                                       "<th style='background-color:#e6e6e6; color: #595959;'>Invoice Value in $</th>" +
+                                       "<th style='background-color:#e6e6e6; color: #595959;'>Amount Collected in $</th>" +
+                                       "<th style='background-color:#e6e6e6; color: #595959;'>Outstanding amount in $</th>" +
+                                       "<th style='background-color:#e6e6e6; color: #595959;'>O/S Days</th>" +
+                                       "</tr>" +
+                                       "<tbody>" +
+                                       rows +
+                                       "</tbody>" +
+                                       "<tr style='text-align: center;'>" +
+                                       "<td style='background-color:#e6e6e6;'></td>" +
+                                       "<td style='background-color:#e6e6e6;'></td>" +
+                                       "<td style='background-color:#e6e6e6;'></td>" +
+                                       "<td style='background-color:#e6e6e6;'></td>" +
+                                       "<td style='background-color:#e6e6e6;'>Customer Wise Total</td>" +
+                                       "<td style='background-color:#e6e6e6;'>" + InvoiceValueTotal + "</td>" +
+                                       "<td style='background-color:#e6e6e6;'>" + AmountCollectedTotal + "</td>" +
+                                       "<td style='background-color:#e6e6e6;'>" + outstandindAmountTotal + "</td>" +
+                                       "<td style='background-color:#e6e6e6;'></td>" +
+                                       "</tr>" +
+                                       "</table>" +
+                        "<br> If you have any questions about the invoice, please email your queries to <a href = 'mailto:accounting@vleadservices.com'> accounting@vleadservices.com </a> or <a href = 'mailto:marcus@vleadservices.com'> marcus@vleadservices.com </a>.We would be happy to help you.<br><br>" +
+
+                        "<b> Note:</b><br>" +
+                              "<ul>" +
+                              "<li> <span style='background-color: yellow;'>If you pay through PayPal mention the email ID as <i> payments@vleadservices.com</mark> </span></i></li>" +
+                              "<li> <span style='background-color: yellow;'>If you pay through Wire transfer mention the beneficiary name as 'VLead Design Services Private Limited'.</span></li>" +
+                              "<li> <span style='background-color: yellow;'>If possible, please ask your Accounting team to send us the bank payment transfer advice or PayPal details. This would be useful to track the payment at our end.</span></li>" +
+                              "<li> <span style='background-color: yellow;'>We do not accept the Check.</span></li>" +
+                              "</ul><br>" +
+                              "Many thanks for your business.<br><br>" +
+                              "<span style = 'background-color: #00ffff;'>Check-out our new corporate video in <a href = 'https://www.youtube.com/watch?v=Hf5BlwIzdGc'style='color: #000000;'><b>Youtube</b></a> with our updated services and people and processes behind it</span><br><br>" +
+                              "<span style = 'background-color: #000000;'><a href = '" + PortfolioLink + "' style='color: #ffffff;'> DOWNLOAD OUR PORTFOLIO </a></span><br><br>" +
+                              "Warm regards and good luck, Accounting Team</div>" +
+                              "<img src=\"" + LogoPath + "\">" +
+                        "<div style = 'font-family: \"Bookman Old Style\", serif;'><br><i>Referrals are the lifeblood of our business.If you have a friend, business associate, or organization that can benefit from our experience and expert service, please contact <a href = 'mailto:marcus@vleadservices.com'> marcus@vleadservices.com </a>.Your referrals are the greatest compliment we can receive.Please do not keep us a secret!!!<br><br>" +
+                        "<a href='mailto:accounting@vleadservices.com'>accounting@vleadservices.com</a><br>" +
+                        "<a href='http://www.vleadservices.com'>www.vleadservices.com</a></i></div>";
+                            message.Subject = subject;
+                            message.Body = body;
+                            message.IsBodyHtml = true;
                         }
                         else
                         {
-                            var desc1 = invoiceNumber + " not send, Reason: No email contact found for the specified customer and type";
-                            var logtype = "Error";
-                            LogError(customerId, desc1, logtype);
-                            errors.Add(new
-                            {
-                                customer.ShortName,
-                                invoiceNumber,
-                                message = "No email contact found for the specified customer and type."
-                            });
+                            message.Subject = invoiceMonthName + " " + invoiceYear + " Invoice from VLead";
+                            var body = "<div style = 'font-family: \"Bookman Old Style\", serif; line-height: 1.5em;'>Hi " + receipientNames + ",<br><br>" +
+                            "Please find attached the invoice for the orders completed in the month of " + invoiceMonthName + " " + latestInvoice.InvoiceYear + ".<br><br>" +
+                            "Many thanks for your help and understanding.<br><br>" +
+
+                            " If you have any questions about the invoice, please email your queries to <a href = 'mailto:accounting@vleadservices.com'> accounting@vleadservices.com </a> or <a href = 'mailto:marcus@vleadservices.com'> marcus@vleadservices.com </a>.We would be happy to help you.<br><br>" +
+
+                            "<b> Note:</b><br>" +
+                              "<ul>" +
+                              "<li> <span style='background-color: yellow;'>If you pay through PayPal mention the email ID as <i> payments@vleadservices.com</mark> </span></i></li>" +
+                              "<li> <span style='background-color: yellow;'>If you pay through Wire transfer mention the beneficiary name as 'VLead Design Services Private Limited'.</span></li>" +
+                              "<li> <span style='background-color: yellow;'>If possible, please ask your Accounting team to send us the bank payment transfer advice or PayPal details. This would be useful to track the payment at our end.</span></li>" +
+                              "<li> <span style='background-color: yellow;'>We do not accept the Check.</span></li>" +
+                              "</ul><br>" +
+                                  "Many thanks for your business.<br><br>" +
+                                  "<span style = 'background-color: #00ffff;'>Checkout our <a href = 'https://www.youtube.com/watch?v=Hf5BlwIzdGc'style='color: #000000;'><b>Youtube</b></a> video to know more about our services</span><br><br>" +
+                                  "<span style = 'background-color: #000000;'><a href = '" + PortfolioLink + "' style='color: #ffffff;'> DOWNLOAD OUR PORTFOLIO </a></span><br><br>" +
+                                  "Warm regards and good luck, Accounting Team</div>" +
+                                  "<img src=\"" + LogoPath + "\">" +
+                            "<div style = 'font-family: \"Bookman Old Style\", serif;'><br><i>Referrals are the lifeblood of our business.If you have a friend, business associate, or organization that can benefit from our experience and expert service, please contact <a href = 'mailto:marcus@vleadservices.com'> marcus@vleadservices.com </a>.Your referrals are the greatest compliment we can receive.Please do not keep us a secret!!!<br><br>" +
+
+                            "<a href = 'mailto:accounting@vleadservices.com'> accounting@vleadservices.com </a><br>" +
+                            "<a href = 'http://www.vleadservices.com'>www.vleadservices.com </a></i></div>";
+                            message.Body = body;
+                            message.IsBodyHtml = true;
                         }
+
+                        using (var smtp = new SmtpClient(host, port))
+                        {
+                            smtp.UseDefaultCredentials = defaultCredential;
+                            smtp.Credentials = new NetworkCredential(userName, password);
+                            smtp.EnableSsl = Ssl;
+                            smtp.Send(message);
+                            success = true;
+                        }
+
+                        message.Dispose();
+                        var desc = request.InvoiceNo + " sent successfully. To-emails: " + message.To + " and  CC-emails: " + message.CC;
+                        var logtype = "Success";
+                        LogError(customerId, desc, logtype);
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        LogError(ex, customerId, invoiceNumber);
+                        var desc1 = request.InvoiceNo + " not send, Reason: No email contact found for the specified customer and type";
+                        var logtype = "Error";
+                        LogError(customerId, desc1, logtype);
                         errors.Add(new
                         {
                             customer.ShortName,
-                            invoiceNumber,
-                            message = ex.Message
+                            request.InvoiceNo,
+                            message = "No email contact found for the specified customer and type."
                         });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogError(ex, customerId, request.InvoiceNo);
+                    errors.Add(new
+                    {
+                        customer.ShortName,
+                        request.InvoiceNo,
+                        message = ex.Message
+                    });
+                }
+                finally
+                {
+                    // Clean up temporary files
+                    if (File.Exists(TempPath))
+                    {
+                        File.Delete(TempPath);
                     }
                 }
 
@@ -492,9 +508,10 @@ namespace Vis.VleadProcessV3.Services
             {
                 StringBuilder receipientNamesBuilder = new StringBuilder();
                 StringBuilder invoiceMonthBuilder = new StringBuilder();
-                foreach (var details in request.request)
+                var customerIds = request.CustomerId.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+                foreach (var clientId in customerIds)
                 {
-                    int customerId = details.CustomerId;
+                    int customerId = int.Parse(clientId);
                     var currentDate = DateTime.UtcNow.AddDays(-60);
                     var firstArFollowUpDate = DateTime.UtcNow.AddDays(-15);
 
@@ -510,8 +527,13 @@ namespace Vis.VleadProcessV3.Services
                         if (emailNotification != null)
                         {
                             if (!defaultCCMail.ToString().IsNullOrEmpty())
-                                message.CC.Add(new MailAddress(defaultCCMail));
-
+                            {
+                                var defaultCCEmail = defaultCCMail.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+                                foreach (var email in defaultCCEmail)
+                                {
+                                    message.CC.Add(new MailAddress(email));
+                                }
+                            }
                             if (emailNotification.ToEmailId != null)
                             {
                                 var toEmailIds = emailNotification.ToEmailId.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
@@ -649,7 +671,7 @@ namespace Vis.VleadProcessV3.Services
                                 }
                                 string receipientNames = receipientNamesBuilder.ToString().TrimEnd(' ', '/').Trim();
                                 string invoiceMonths = invoiceMonthBuilder.ToString().TrimEnd(' ', ',').Trim();
-                                message.From = new MailAddress(FromMail);
+                                message.From = new MailAddress(FromMail, fromName);
 
                                 message.Subject = "Pending Invoice from VLead - " + monthName + " " + pendingInvoiceYear;
                                 var body = "<div style = 'font-family: \"Bookman Old Style\", serif; line-height: 1.5em;'>Hi " + receipientNames + ",<br><br>" +
@@ -693,7 +715,7 @@ namespace Vis.VleadProcessV3.Services
                                       "</ul><br>" +
                                       "Many thanks for your business.<br><br>" +
                                       "<span style = 'background-color: #00ffff;'>Check-out our new corporate video in <a href = 'https://www.youtube.com/watch?v=Hf5BlwIzdGc'style='color: #000000;'><b>Youtube</b></a> with our updated services and people and processes behind it</span><br><br>" +
-                                      "<span style = 'background-color: #000000;'><a href = '" + PortfolioPath + "' style='color: #ffffff;'> DOWNLOAD OUR PORTFOLIO </a></span><br><br>" +
+                                      "<span style = 'background-color: #000000;'><a href = '" + PortfolioLink + "' style='color: #ffffff;'> DOWNLOAD OUR PORTFOLIO </a></span><br><br>" +
                                       "Warm regards and good luck, Accounting Team</div>" +
                                       "<img src=\"" + LogoPath + "\">" +
                                 "<div style = 'font-family: \"Bookman Old Style\", serif;'><br><i>Referrals are the lifeblood of our business.If you have a friend, business associate, or organization that can benefit from our experience and expert service, please contact <a href = 'mailto:marcus@vleadservices.com'> marcus@vleadservices.com </a>.Your referrals are the greatest compliment we can receive.Please do not keep us a secret!!!<br><br>" +
@@ -779,7 +801,7 @@ namespace Vis.VleadProcessV3.Services
                                     }
                                 }
                                 string receipientNames = receipientNamesBuilder.ToString().TrimEnd(' ', '/').Trim();
-                                message.From = new MailAddress(FromMail);
+                                message.From = new MailAddress(FromMail, fromName);
 
                                 message.Subject = "Please ignore if already paid - " + monthName + " " + invoiceYear + " Invoice from VLead";
                                 var body = "<div style = 'font-family: \"Bookman Old Style\", serif; line-height: 1.5em;'>Hi " + receipientNames + ",<br><br>" +
@@ -796,7 +818,7 @@ namespace Vis.VleadProcessV3.Services
                                       "</ul><br>" +
                                       "Many thanks for your business.<br><br>" +
                                       "<span style = 'background-color: #00ffff;'>Check-out our new corporate video in <a href = 'https://www.youtube.com/watch?v=Hf5BlwIzdGc'style='color: #000000;'><b>Youtube</b></a> with our updated services and people and processes behind it</span><br><br>" +
-                                      "<span style = 'background-color: #000000;'><a href = '" + PortfolioPath + "' style='color: #ffffff;'> DOWNLOAD OUR PORTFOLIO </a></span><br><br>" +
+                                      "<span style = 'background-color: #000000;'><a href = '" + PortfolioLink + "' style='color: #ffffff;'> DOWNLOAD OUR PORTFOLIO </a></span><br><br>" +
                                       "Warm regards and good luck, Accounting Team</div>" +
                                       "<img src=\"" + LogoPath + "\">" +
                                 "<div style = 'font-family: \"Bookman Old Style\", serif;'><br><i>Referrals are the lifeblood of our business.If you have a friend, business associate, or organization that can benefit from our experience and expert service, please contact <a href = 'mailto:marcus@vleadservices.com'> marcus@vleadservices.com </a>.Your referrals are the greatest compliment we can receive.Please do not keep us a secret!!!<br><br>" +
@@ -862,8 +884,11 @@ namespace Vis.VleadProcessV3.Services
                     error = errors
                 };
             }
+
             return null;
         }
+
+
 
 
 

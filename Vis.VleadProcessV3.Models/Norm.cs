@@ -14,9 +14,9 @@ namespace Vis.VleadProcessV3.Models
 
         public int ClientId { get; set; }
 
-        public int ScopeId { get; set; }
+        public int? ScopeId { get; set; }
 
-        public int EmployeeId { get; set; }
+        public int? EmployeeId { get; set; }
 
         public int ProductivityNorm { get; set; }
 
@@ -36,6 +36,10 @@ namespace Vis.VleadProcessV3.Models
 
         public DateTime? UpdatedUtc { get; set; }
 
+        public string? Process { get; set; }
+
+        public int? JobStatusId { get; set; }
+
         [System.Text.Json.Serialization.JsonIgnore]
         public virtual Customer? Client { get; set; } = null!;
 
@@ -50,5 +54,8 @@ namespace Vis.VleadProcessV3.Models
 
         [System.Text.Json.Serialization.JsonIgnore]
         public virtual Scope? Scope { get; set; } = null!;
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public virtual JobStatus?  JobStatus{ get; set; }
     }
 }

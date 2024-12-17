@@ -485,5 +485,31 @@ namespace VisProcess.Controllers
                 return Ok(response);
             }
         }
+
+        [HttpGet]
+        [Route("GetTallyInvoiceReport")]
+        public IActionResult GetTallyInvoiceReport(int clientId, DateTime fromdate, DateTime toDate)
+        {
+            try
+            {
+                var tallyInvoiceReport = _invoiceservice.GetTallyInvoiceReport(clientId, fromdate, toDate);
+                var response = new
+                {
+                    Success = true,
+                    Message = tallyInvoiceReport
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = new
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+                return Ok(response);
+            }
+
+        }
     }
 }

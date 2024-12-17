@@ -8,8 +8,7 @@ namespace Vis.VleadProcessV3.Models;
 
 public partial class AttendanceSheet
 {
-    public int Sno { get; set; }
-
+    public int Id { get; set; }
     public string StaffId { get; set; } = null!;
 
     public string Name { get; set; } = null!;
@@ -44,16 +43,15 @@ public partial class AttendanceSheet
 
     public string ExtraHoursWorked { get; set; } = null!;
 
-    public int? Absent { get; set; }
+    public decimal? Absent { get; set; }
 
-    public int? Present { get; set; }
+    public decimal? Present { get; set; }
 
-    public int? WeeklyHoliday { get; set; }
+    public decimal? WeeklyHoliday { get; set; }
 
-    public int Total { get; set; }
+    public decimal Total { get; set; }
 
     public int CreatedBy { get; set; }
 
     public DateTime CreatedAt { get; set; }
 }
-

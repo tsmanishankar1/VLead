@@ -31,7 +31,7 @@ namespace Vis.VleadProcessV3.Services
                           join div in db.Divisions on cf.DivisionId equals div.Id
                           join cust in db.Customers on cf.CustomerId equals cust.Id
                           where (emp.IsDeleted == false && cf.IsActive == true)
-                          select new { cf.Id, emp.EmployeeCode, emp.EmployeeName, div.DivisionName, cust.ShortName, cf.Fresh, cf.Revision, cf.QC, cf.Remarks }).OrderBy(x => x.Id).ToList();
+                          select new { cf.Id, emp.EmployeeCode, emp.EmployeeId, emp.EmployeeName, div.DivisionName, DivisionId = div.Id, cust.ShortName, CustomerId = cust.Id, cf.Fresh, cf.Revision, cf.QC, cf.Remarks }).OrderBy(x => x.Id).ToList();
             return result;
         }
 

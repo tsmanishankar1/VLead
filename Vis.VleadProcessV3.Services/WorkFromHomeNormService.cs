@@ -1,4 +1,5 @@
-﻿using Microsoft.Office.Interop.Excel;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Office.Interop.Excel;
 using System;
 using System.Collections.Generic;
 using System.Drawing.Drawing2D;
@@ -30,10 +31,42 @@ namespace Vis.VleadProcessV3.Services
 */
         public Norm AddNorm(CreateNormRequest request)
         {
-            var existingNorm = _context.Norms.FirstOrDefault(n => n.EmployeeId == request.EmployeeId && n.IsDeleted == false);
+            bool isExist = false;
+
+            // Initialize a query to search Norms based on the provided conditions
+            var query = _context.Norms.AsQueryable();
+
+            if (request.ScopeId != null)
+            {
+                query = query.Where(n => n.ScopeId == request.ScopeId);
+            }
+
+            if (request.Process != null)
+            {
+                query = query.Where(n => n.Process == request.Process);
+            }
+
+            if (request.JobStatusId != null)
+            {
+                query = query.Where(n => n.JobStatusId == request.JobStatusId);
+            }
+
+            var existingNorm = query
+                .FirstOrDefault(n => n.DivisionId == request.DivisionId
+                                      && n.ClientId == request.ClientId
+                                      && n.IsDeleted == false);
+
             if (existingNorm != null)
             {
-                throw new CustomException("Specified employee's norm is already exist.");
+                isExist = true;
+            }
+            else
+            {
+                throw new CustomException("Select any one of the following: Scope, Process, or JobStatus.");
+            }
+            if (isExist)
+            {
+                throw new CustomException("Specified norm is already exist.");
             }
             var norm = new Norm
             {
@@ -41,6 +74,8 @@ namespace Vis.VleadProcessV3.Services
                 ClientId = request.ClientId,
                 ScopeId = request.ScopeId,
                 EmployeeId = request.EmployeeId,
+                Process = request.Process,
+                JobStatusId = request.JobStatusId,
                 ProductivityNorm = request.ProductivityNorm,
                 EffectiveFromDate = DateTime.UtcNow,
                 WorkMode = request.WorkMode,
@@ -128,7 +163,6 @@ namespace Vis.VleadProcessV3.Services
                         join d in _context.Divisions on n.DivisionId equals d.Id
                         join c in _context.Customers on n.ClientId equals c.Id
                         join s in _context.Scopes on n.ScopeId equals s.Id
-                        join e in _context.Employees on n.EmployeeId equals e.EmployeeId
                         join cr in _context.Employees on n.CreatedBy equals cr.EmployeeId
                         select new NormResponse
                         {
@@ -137,9 +171,8 @@ namespace Vis.VleadProcessV3.Services
                             ClientId = n.ClientId,
                             Client = c.Name,
                             ScopeId = n.ScopeId,
+                            Process = n.Process,
                             Scope = s.Description,
-                            EmployeeId = n.EmployeeId,
-                            Employee = e.EmployeeName,
                             ProductivityNorm = n.ProductivityNorm,
                             EffectiveFromDate = n.EffectiveFromDate,
                             WorkMode = n.WorkMode,
@@ -150,5 +183,16 @@ namespace Vis.VleadProcessV3.Services
 
             return norm;
         }
+        public void DeleteNorm(int normId)
+        {
+            var existingNorm = _context.Norms.Where(x=>x.Id == normId && x.IsDeleted == false).FirstOrDefault();
+            if (existingNorm != null)
+            {
+                existingNorm.IsDeleted = true;
+                _context.Update(existingNorm);
+                _context.SaveChanges();
+            }
+        }
+
     }
 }

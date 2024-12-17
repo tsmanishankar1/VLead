@@ -95,7 +95,7 @@ namespace VisProcess.Local.Controller
                           "</table>" +
                           "<br/><br/>" +
                           // "<a href='" + QueryMailTriggering + "JId=" + JobId + "&StatusId=" + StatusIdVal + "&WFTId=" + pwtDetails.Id + "' target='_blank'>Click to Login VIS</a><br/><br/>" +
-                          "<span style='color: green; text-decoration: underline;'>If you have any queries regarding this order, please send an e-mail to support@vleadservices.com or Call Toll-free - 18009571698 and Skype - (214)3479935.</span><br/><br/>" +
+                          "<span style='color: green; text-decoration: underline;'>If you have any queries regarding this order, please send an e-mail to support@vleadservices.com  or call us @ (469) 910-0091 / (714) 257-5484.</span><br/><br/>" +
                           "<b>Note:</b> Please DO NOT respond to this e-mail or use this e-mail address since it is not monitored.<br/><br/>" +
                           "Thank you for your interest in VLead Services.<br/><br/>" +
                           "Many thanks for your business.<br/>" +
@@ -140,7 +140,7 @@ namespace VisProcess.Local.Controller
                                 "</table>" +
                                 //"<a href='" + QueryMailTriggering + "JId=" + JobId + "&StatusId=" + StatusIdVal + "&WFTId=" + pwtDetails.Id + "' target='_blank'>Click to Login VIS</a><br/><br/>" +
                                 "Please approve the special pricing quote by logging into to your VIS account.<br/><br/>" +
-                                "<span style='color: green; text-decoration: underline;'>If you have any queries regarding this order, please send an e-mail to support@vleadservices.com or Call Toll-free - 18009571698 and Skype - (214)3479935.</span><br/><br/>" +
+                                "<span style='color: green; text-decoration: underline;'>If you have any queries regarding this order, please send an e-mail to support@vleadservices.com  or call us @ (469) 910-0091 / (714) 257-5484.</span><br/><br/>" +
                                 "<b>Note:</b> Please DO NOT respond to this e-mail or use this e-mail address since it is not monitored.<br/><br/>" +
                                 "Thank you for your interest in VLead Services.<br/><br/>" +
                                 "Many thanks for your business.<br/>" +
@@ -333,7 +333,7 @@ namespace VisProcess.Local.Controller
                             body = "Hi " + emailIdAndName.ContactName + ",<br/><br/>" +
                                     "This e-mail is to keep you informed that the order  <b>" + jobOrderDetails.FileName + "</b> is completed and uploaded through VIS. Please download it from the portal or from this link <a href='" + ftpUrl + "api/Allocation/DownloadZipFile?path=" + pwtRecord.FileUploadPath + "'>Click here to Download.</a> Review and let us know your feedback." +
                                     "If the order needs to be revised, you may send us revisions through VIS itself.<br/><br/>" +
-                                    "If you have any queries regarding this order, please send an e-mail to  support@vleadservices.com  or Call Toll-free - 18009571698 and Skype - (214)3479935.<br/><br/>";
+                                    "If you have any queries regarding this order, please send an e-mail to  support@vleadservices.com   or call us @ (469) 910-0091 / (714) 257-5484.<br/><br/>";
 
                             body1 = "<b>Note:</b> Completed file size is more than 20 MB.  So, we unable to proceed with the attachments.  Please click the hyperlink to download the files.";
 
@@ -377,7 +377,7 @@ namespace VisProcess.Local.Controller
 
                             body = "Hi " + emailIdAndName.ContactName + ",<br/><br/>" +
                                     "This e-mail is to keep you informed that the order <b>" + jobOrderDetails.FileName + "</b> is revised and uploaded through VIS. Please download it from the portal or from this link <a href='" + ftpUrl + "api/Allocation/DownloadZipFile?path=" + pwtRecord.FileUploadPath + "'>Click here to Download.</a> Review and let us know your feedback.<br/><br/>" +
-                                    "If you have any queries regarding this order, please send an e-mail to  support@vleadservices.com  or Call Toll-free - 18009571698 and Skype - (214)3479935.<br/><br/>";
+                                    "If you have any queries regarding this order, please send an e-mail to  support@vleadservices.com   or call us @ (469) 910-0091 / (714) 257-5484.<br/><br/>";
 
                             body1 = "<b>Note:</b> Completed file size is more than 20 MB.  So, we unable to proceed with the attachments.  Please click the hyperlink to download the files.";
 
@@ -425,7 +425,7 @@ namespace VisProcess.Local.Controller
                                 "We have completed your quote request for <b>" + getclientorderdetailsJO.FileName + "</b> and the details are sent to you through your VIS account." +//
 
                                     "If you agree to the pricing, please approve the order by logging into your VIS account.<br/><br/>" +
-                                    "If you have any queries regarding this order, please send an e-mail to  support@vleadservices.com  or Call Toll-free - 18009571698 and Skype - (214)3479935.<br/><br/>";
+                                    "If you have any queries regarding this order, please send an e-mail to  support@vleadservices.com   or call us @ (469) 910-0091 / (714) 257-5484.<br/><br/>";
 
                             body1 = "<b>Note:</b> Completed file size is more than 20 MB.  So, we unable to proceed with the attachments.  Please click the hyperlink to download the files.";
 

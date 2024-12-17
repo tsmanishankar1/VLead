@@ -14,5 +14,6 @@ namespace Vis.VleadProcessV3.Models
         public int jobStatusId { get; set; }
         public int createdBy { get; set; }
         public int divisionId { get; set; }
+        public string filePath { get; set; }
     }
 }

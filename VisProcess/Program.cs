@@ -87,7 +87,7 @@ builder.Services.AddTransient<EmployeeFileUploadService>();
 builder.Services.AddTransient<EmployeeVsDivisionService>();
 builder.Services.AddTransient<EmployeeVsSkillsetService>();
 builder.Services.AddTransient<ErrorCategoryService>();
-builder.Services.AddTransient<ExternalErrorReportService>();
+//builder.Services.AddTransient<ExternalErrorReportService>();
 builder.Services.AddTransient<FileStatusDashBoardService>();
 builder.Services.AddTransient<FileUpload>();
 builder.Services.AddTransient<FtpFilesService>();
@@ -209,7 +209,7 @@ public static class ServiceConfiguration
         services.AddTransient<EmployeeVsDivisionService>();
         services.AddTransient<EmployeeVsSkillsetService>();
         services.AddTransient<ErrorCategoryService>();
-        services.AddTransient<ExternalErrorReportService>();
+        //services.AddTransient<ExternalErrorReportService>();
         services.AddTransient<FileStatusDashBoardService>();
         services.AddTransient<FileUpload>();
         services.AddTransient<JobOrderService>();

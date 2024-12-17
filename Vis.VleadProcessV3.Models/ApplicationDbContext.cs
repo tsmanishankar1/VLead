@@ -27,7 +27,7 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<AttendanceMaster> AttendanceMasters { get; set; }
 
-    public virtual DbSet<AttendanceSheet> AttendanceSheets { get; set; }
+    public virtual DbSet<AttendanceSheet> AttendanceSheet { get; set; }
 
     public virtual DbSet<AttendanceTransaction> AttendanceTransactions { get; set; }
 
@@ -108,6 +108,8 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<Designation> Designations { get; set; }
 
     public virtual DbSet<Division> Divisions { get; set; }
+
+    public virtual DbSet<DormantClient> DormantClients { get; set; }
 
     public virtual DbSet<DormantClientResult> DormantClientResults { get; set; }
     public virtual DbSet<EmailContactNotification> EmailContactNotifications { get; set; }
@@ -504,6 +506,7 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<GetQuoteTrackJobs_Result> GetQuoteTrackJobs_Results { get; set; }
     public virtual DbSet<GetClientStatus_Result> GetClientStatus_Results { get; set; }
     public virtual DbSet<GetNewClientReport_Result> GetNewClientReport_Results { get; set; }
+    public virtual DbSet<GetTallyInvoiceReport_Result> GetTallyInvoiceReport_Result { get; set; }
     public virtual DbSet<GetTrialClientReport_Result> GetTrialClientReport_Results { get; set; }
     public virtual DbSet<GetTrialClientSummaryReport_Result> GetTrialClientSummaryReport_Results { get; set; }
     public virtual DbSet<GetRevisionCount_Result> GetRevisionCount_Results { get; set; }
@@ -613,9 +616,10 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<AttendanceSheet>(entity =>
         {
-            entity.HasKey(e => e.Sno).HasName("PK__Attendan__CA1FE4641462D1B7");
+            entity.HasKey(e => e.Id).HasName("PK__Attendan__3214EC0745C776D6");
 
-            entity.Property(e => e.Sno).ValueGeneratedNever();
+            entity.ToTable("AttendanceSheet");
+
             entity.Property(e => e.AttendanceStatus)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -1740,6 +1744,11 @@ public partial class ApplicationDbContext : DbContext
             entity.HasNoKey();
         });
 
+        modelBuilder.Entity<DormantClient>(entity =>
+        {
+            entity.HasNoKey();
+        });
+
         modelBuilder.Entity<EmailContactNotification>(entity =>
         {
             entity.ToTable("EmailContactNotification");
@@ -2170,6 +2179,7 @@ public partial class ApplicationDbContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("Client Status");
+            entity.Property(e => e.CreatedUtc).HasColumnType("datetime");
             entity.Property(e => e.Department)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -2195,7 +2205,10 @@ public partial class ApplicationDbContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("Job Status");
-            entity.Property(e => e.QcId).HasColumnName("QC ID");
+            entity.Property(e => e.QcId)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("QC ID");
             entity.Property(e => e.QcName)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -3350,6 +3363,12 @@ public partial class ApplicationDbContext : DbContext
                 .HasForeignKey(d => d.ScopeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("SI");
+            entity.HasOne(d => d.JobStatus) 
+                .WithMany(p => p.Norms)
+                .HasForeignKey(d => d.JobStatusId) 
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Norm_JobStatus");
+
         });
 
         modelBuilder.Entity<OutsourceCount>(entity =>
