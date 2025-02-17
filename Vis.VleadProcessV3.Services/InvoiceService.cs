@@ -406,6 +406,7 @@ namespace Vis.VleadProcessV3.Services
                                 _unitWork.InvoiceMaster.Add(saveinvoicemaster);
 
                                 var saveinvoicetran = new InvoiceTran();
+                                saveinvoicetran.Im = saveinvoicemaster;
                                 saveinvoicetran.Imid = saveinvoicemaster.Id;
                                 saveinvoicetran.Value = sumofprice/countOfJobs;
                                 if (item.DepartmentId == 1)

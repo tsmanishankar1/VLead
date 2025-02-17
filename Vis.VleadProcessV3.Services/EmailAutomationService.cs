@@ -571,6 +571,7 @@ namespace Vis.VleadProcessV3.Services
                             .Get(x => x.CustomerId == customerId &&
                                     x.IsOutstanding == true &&
                                     x.InvoiceDate <= firstArFollowUpDate &&
+                                    x.InvoiceDate >currentDate &&
                                     x.IsDeleted == false)
                             .ToList();
 
@@ -732,13 +733,11 @@ namespace Vis.VleadProcessV3.Services
                                     smtp.Send(message);
                                     success = true;
                                 }
-
-                                message.Dispose();
                                 var desc = "Mail sent to " + customer.Name + " successfully. To-emails: " + message.To + " and  CC-emails: " + message.CC;
                                 var logtype = "Success";
                                 LogError(customerId, desc, logtype);
                             }
-                            else if (firstARFollowUpInvoiceDetails.Any())
+                            if (firstARFollowUpInvoiceDetails.Any())
                             {
                                 int sNo = 1;
                                 foreach (var invoice in firstARFollowUpInvoiceDetails)
@@ -841,7 +840,7 @@ namespace Vis.VleadProcessV3.Services
                                 var logtype = "Success";
                                 LogError(customerId, desc, logtype);
                             }
-                            else
+                            else if(!invoiceDetails.Any() && !firstARFollowUpInvoiceDetails.Any())
                             {
                                 var desc1 = "Invoice not found for specified customer in InvoiceMaster";
                                 var logtype = "Error";

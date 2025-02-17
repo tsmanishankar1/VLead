@@ -32,7 +32,10 @@ namespace Vis.VleadProcessV3.Services
         public Norm AddNorm(CreateNormRequest request)
         {
             bool isExist = false;
-
+            if(request.ScopeId == null && request.JobStatusId == null && request.Process == null)
+            {
+                throw new CustomException("Select any one of the following: Scope or Process or JobStatus.");
+            }
             // Initialize a query to search Norms based on the provided conditions
             var query = _context.Norms.AsQueryable();
 
@@ -59,10 +62,6 @@ namespace Vis.VleadProcessV3.Services
             if (existingNorm != null)
             {
                 isExist = true;
-            }
-            else
-            {
-                throw new CustomException("Select any one of the following: Scope, Process, or JobStatus.");
             }
             if (isExist)
             {
