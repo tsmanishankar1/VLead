@@ -2194,7 +2194,7 @@ namespace Vis.VleadProcessV3.Services
                                             body = "Hi " + emailIdAndName.ContactName + ",<br/><br/>" +
                                             "This e-mail is to keep you informed that the order  <b>" + jobOrderDetails.FileName + "</b> is completed and uploaded through VIS. Please download it from the portal or from this link <a href='" + ftpUrl + "api/Allocation/DownloadZipFile?path=" + pwtRecord.FileUploadPath + "'>Click here to Download.</a> Review and let us know your feedback." +
                                             "If the order needs to be revised, you may send us revisions through VIS itself.<br/><br/>" +
-                                            "If you have any queries regarding this order, please send an e-mail to support@vleadservices.com or call us at (248) 525 6936/(214) 347-9935.<br/><br/>";
+                                            "If you have any queries regarding this order, please send an e-mail to support@vleadservices.com or call us @ (469) 910-0091 / (714) 257-5484.<br/><br/>";
 
                                             body1 = "<b>Note:</b> Completed file size is more than 20 MB.  So, we unable to proceed with the attachments.  Please click the hyperlink to download the files.";
 
@@ -2725,7 +2725,7 @@ namespace Vis.VleadProcessV3.Services
                                 var body = "Hi " + emailIdAndName.ContactName + ",<br/><br/>" +
                                 "This e-mail is to keep you informed that the   <b>" + fresh + "</b> order(s) is completed and uploaded through VIS. Review and let us know your feedback." +
                                 "If the order needs to be revised, you may send us revisions through VIS itself.<br/><br/>" +
-                                "If you have any queries regarding this order, please send an e-mail to support@vleadservices.com or call us at (248) 525 6936/(214) 347-9935.<br/><br/>" +
+                                "If you have any queries regarding this order, please send an e-mail to support@vleadservices.com or call us @ (469) 910-0091 / (714) 257-5484.<br/><br/>" +
                                 "<b>Note:</b> Completed file size is more than 20 MB.  So, we unable to proceed with the attachments.  Please click the hyperlink to download the files." +
                                 "<b>Note:</b> Please DO NOT respond to this e-mail or use this e-mail address since it is not monitored.<br/><br/>" +
                                 "Thank you for your interest with VLead Services.<br/><br/>" +

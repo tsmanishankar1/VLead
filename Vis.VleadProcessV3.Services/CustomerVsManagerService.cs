@@ -34,34 +34,46 @@ namespace Vis.VleadProcessV3.Services
                 {
                     foreach (var customerId in request.CustomerIds)
                     {
-                        var customer = db.CustomerVsManagers.OrderByDescending(x=>x.Id).FirstOrDefault(x => x.CustomerId == customerId);
-                        if (customer==null)
+                        var customer = db.CustomerVsManagers.OrderByDescending(x => x.Id)
+                                           .FirstOrDefault(x => x.CustomerId == customerId);
+
+                        if (customer == null)
                         {
-                            CustomerVsManager customerVsManager = new CustomerVsManager();
-                            customerVsManager.CustomerId = customerId;
-                            customerVsManager.ManagerId = request.managerId;
-                            customerVsManager.CreatedBy = createdById;
-                            customerVsManager.CreatedUtc = DateTime.UtcNow;
-                            customerVsManager.EffectiveFrom = DateTime.UtcNow;
+                            CustomerVsManager customerVsManager = new CustomerVsManager
+                            {
+                                CustomerId = customerId,
+                                ManagerId = request.managerId,
+                                CreatedBy = createdById,
+                                CreatedUtc = DateTime.UtcNow,
+                                EffectiveFrom = DateTime.UtcNow
+                            };
+
                             db.CustomerVsManagers.Add(customerVsManager);
-                            db.SaveChanges();
                         }
                         else
                         {
-                            CustomerVsManager customerVsManager = new CustomerVsManager();
-                            customerVsManager.CustomerId = customerId;
-                            customerVsManager.ManagerId = request.managerId;
-                            customerVsManager.CreatedBy = createdById;
-                            customerVsManager.CreatedUtc = DateTime.UtcNow;
-                            customerVsManager.EffectiveFrom = DateTime.UtcNow;
                             customer.EffectiveTo = DateTime.UtcNow.AddDays(-1);
                             customer.IsDeleted = true;
                             customer.UpdatedBy = createdById;
                             customer.UpdatedUtc = DateTime.UtcNow;
-                            db.CustomerVsManagers.Add(customerVsManager);
+
                             db.SaveChanges();
+
+                            CustomerVsManager customerVsManager = new CustomerVsManager
+                            {
+                                CustomerId = customerId,
+                                ManagerId = request.managerId,
+                                CreatedBy = createdById,
+                                CreatedUtc = DateTime.UtcNow,
+                                EffectiveFrom = DateTime.UtcNow
+                            };
+
+                            db.CustomerVsManagers.Add(customerVsManager);
                         }
+
+                        db.SaveChanges();
                     }
+
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
                         Content = new StringContent("Manager assigned successfully")

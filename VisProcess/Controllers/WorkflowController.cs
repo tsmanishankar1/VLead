@@ -20,6 +20,7 @@ namespace VisProcess.Controllers
 
         [HttpPost]
         [Route("Traymovement")]
+        [RequestSizeLimit(10000000000)]
         public Object BulkTrayMovement(ProcessTransaction SelectedRows)
         {
             var httpRequest = HttpContext.Request;
@@ -29,6 +30,7 @@ namespace VisProcess.Controllers
         [HttpGet]
 
         [Route("GetProcessTransaction/{WFTId}/{EmployeeId}")]
+        [RequestSizeLimit(10000000000)]
         public Object GetProcessTransactionByWFTId(int WFTId, int EmployeeId)
         {
             return _workflowService.GetProcessTransactionByWftid(WFTId, EmployeeId);
@@ -36,6 +38,7 @@ namespace VisProcess.Controllers
 
         [HttpPost]
         [Route("GetProductionWorkList")]
+        [RequestSizeLimit(10000000000)]
         public Object GetProductionWorkList(ProcessTransaction processTransaction)
         {
             var employeeAssign = _workflowService.GetProductionWorkList(processTransaction);
@@ -65,6 +68,7 @@ namespace VisProcess.Controllers
         //=====================================final CL======================================================
         [HttpPost]
         [Route("ChangeWorkflow/{WFTId}")]
+        [RequestSizeLimit(10000000000)]
         public async Task<Object> ChangeWorkflow(int WFTId)
         {
             var payload = JsonConvert.DeserializeObject<ProcessTransaction>(HttpContext.Request.Form["data"]);
@@ -73,6 +77,7 @@ namespace VisProcess.Controllers
         }
         [HttpPost]
         [Route("processMovement")]
+        [RequestSizeLimit(10000000000)]
         public Object ChangeWorkflowBulk()
         {
             var SelectedRows = JsonConvert.DeserializeObject<ProcessTransaction>(HttpContext.Request.Form["data"]);
